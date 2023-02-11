@@ -123,7 +123,7 @@ Now, you simply use it.  From the get-go, environmental variables will 'just wor
 Here are a few basic examples:
 
 ```python
-from xyn_config import config
+from xcon import config
 
 # If you had an environmental variable called `SOME_CONFIG_VARIABLE`, this would find it:
 my_config_value = config.get('SOME_CONFIG_VARIABLE')
@@ -141,12 +141,12 @@ By default, unit tests will always start with a Config object that has caching d
 and only uses the environmental provider (ie: only looks at environmental variables).
 
 This is accomplished via an autouse fixture in a pytest plugin module
-(see plugin module `xyn_config.pytest_plugin` or fixture `xyn_config.pytest_plugin.xyn_config`).
+(see plugin module `xcon.pytest_plugin` or fixture `xcon.pytest_plugin.xcon`).
 
 If a project has `xyn-config` as a dependency, pytest will find this plugin module
 and automatically use it. Nothing more to do.
 
-As an FYI/side-note: There is a `xyn_resource.pytest_plugin.xyn_context` that will also
+As an FYI/side-note: There is a `xinject.pytest_plugin.xyn_context` that will also
 automatically  configure a blank context for each unit test.
 
 This does mean you must configure Config using a fixture or at the top of your unit test method,
@@ -286,17 +286,17 @@ followed by a link to more details.
 - Grabbing Values
     - Simply ask a config object for a value via upper-case attribute:
     - `config.CLIENT_ID`
-    - Or use `get` method `xyn_config.config.Config.get`.
+    - Or use `get` method `xcon.config.Config.get`.
     - get method lets you pass in a default value, just like `dict.get`.
 - Current Config / Resources
     - There is a concept that there is a 'current/active' default config object that can be used
     at any time.
-    - This is accomplished via xyn-resource library (see `xyn-resource`).
-    - You can get the current config object via `Config.resource()`.
+    - This is accomplished via xinject library (see `xinject`).
+    - You can get the current config object via `Config.grab()`.
     - There is a convenient proxy config object you can use that represents the current Config object.
     - The proxy can be used as if it's the current config object.
     - Below you see us importing the config proxy and then using it to get a value:
-    - `from xyn_config import config`
+    - `from xcon import config`
     - `config.get('some_config_var_name')`
     - For details see [Current Config](#current-config)
 - Parents
@@ -313,7 +313,7 @@ followed by a link to more details.
         - It's usually more convenient to just use the current/default config.
     - For details see [Parent Chain](#parent-chain).
 - Overrides
-    - Some overrides can happen as part of `xyn_config.config.Config.__init__`.
+    - Some overrides can happen as part of `xcon.config.Config.__init__`.
     - Such as `service`, `environment`, `providers`, etc.
     - You can also change them after Config object is created via attributes.
     - For normal configuration values, you can override thoese as well.
@@ -335,7 +335,7 @@ followed by a link to more details.
 
 ## Service/Environment Names {#service-environment-names}
 
-There are two special variables that `xyn_config.config.Config` treats special:
+There are two special variables that `xcon.config.Config` treats special:
 
 1. `Config.SERVICE_NAME`
     - Normally comes from an environmental variable `SERVICE_NAME`.
@@ -367,7 +367,7 @@ Config will only look in these locations for the special variables
 1. First, [Overrides] (including and any overrides in the [Parent Chain][parent-chain]).
 2. Environmental variables next (directly via `os.getenv`, NOT the provider).
     - **This is how most projects normally do it.**
-    - Even if the `xyn_config.providers.environmental.EnvironmentalProvider` is **NOT** in the
+    - Even if the `xcon.providers.environmental.EnvironmentalProvider` is **NOT** in the
       [Provider Chain][provider-chain] we will still look for `SERVICE_NAME`/`APP_ENV` in the
       environmental variables (all other config values would not).
 3. [Defaults] last (including any defaults in the [Parent Chain][parent-chain]).
@@ -380,7 +380,7 @@ Let's start with a very simple example:
 ```python
 # Import the default config object, which is an 'alias' to the
 # currently active config object.
-from xyn_config import config
+from xcon import config
 
 # Get a value from the currently active config object, this special
 # config object will always lookup the currently active config object
@@ -388,13 +388,13 @@ from xyn_config import config
 value = config.SOME_CONFIG_VALUE
 ```
 
-This will look up the current `xyn_config.config.Config` class and ask it for the
+This will look up the current `xcon.config.Config` class and ask it for the
 `SOME_CONFIG_VALUE` value. It will either give you the value or a None if it does not exist.
 
 The general idea is: The underlying 'app/service' setup will provide the properly setup 
-ready-to-use `xyn_config.config.Config` as a resource (`xyn_resource.resource.Resource`).
-So you can just import this special `xyn_config.config.config` variable to easily always
-use current `xyn_config.config.Config.current` resource.
+ready-to-use `xcon.config.Config` as a resource (`xinject.dependency.Dependency`).
+So you can just import this special `xcon.config.config` variable to easily always
+use current `xcon.config.Config.current` resource.
 
 ## Naming Guidelines
 
@@ -415,7 +415,7 @@ use current `xyn_config.config.Config.current` resource.
       them in code and generally lower-case them in the various aws providers.
 - Directory paths are case **sensitive** (see [Directory Paths][standard-directory-paths]);
   like this: `/myCoolService/joshOrrEnv/...`.
-    - The service name and env name that make up the `xyn_config.directory.Directory.path`
+    - The service name and env name that make up the `xcon.directory.Directory.path`
       is case-sensitive. But the part after that for the config name is **NOT**.
 
 ## Standard Lookup Order
@@ -425,19 +425,19 @@ By Default, Config will look at the following locations by default
 
 1. Config [Overrides](#overrides)
 2. Environmental Variables
-    - via `xyn_config.providers.environmental.EnvironmentalProvider`.
+    - via `xcon.providers.environmental.EnvironmentalProvider`.
 3. Dynamo flat config cache, Details:
     - [Info About Caching][caching]
-    - via `xyn_config.providers.dynamo.DynamoCacher`
-4. AWS Secrets Provider via `xyn_config.providers.secrets_manager.SecretsManagerProvider`.
-5. AWS SSM Param Store via `xyn_config.providers.ssm_param_store.SsmParamStoreProvider`.
+    - via `xcon.providers.dynamo.DynamoCacher`
+4. AWS Secrets Provider via `xcon.providers.secrets_manager.SecretsManagerProvider`.
+5. AWS SSM Param Store via `xcon.providers.ssm_param_store.SsmParamStoreProvider`.
 6. Config [Defaults](#defaults)
 
 ## Standard Directory Paths
 [standard-directory-paths]: #standard-directory-paths
 
 Most of the providers have a 'path' you can use with them. I call the path up until just
-before the config variable name a directory (see `xyn_config.directory.Directory`).
+before the config variable name a directory (see `xcon.directory.Directory`).
 
 If no `Config.SERVICE_NAME` has been provided or is set to `None`
 (either from a lack of an environmental variable `SERVICE_NAME`, or via
@@ -470,14 +470,14 @@ The `Config` class is more dynamic... you can think of it as more of a 'view' or
 So this "view" and/or "lens" can now be easily changed.  You can do an override like this:
 
 ```python
-from xyn_config import config
+from xcon import config
 config.SERVICE_NAME = "someServiceName"
 ```
 
 Or set a default (if it can't find the value anywhere else):
 
 ```python
-from xyn_config import config
+from xcon import config
 config.set_default("service_name", "someServiceName")
 ```
 
@@ -520,8 +520,8 @@ still be very fast, as the resources it uses behind the scenes stay allocated an
 have the value for `SOME_NAME` if it's been asked for previously.
 
 ```python
-from xyn_config import Config
-from xyn_types import Default
+from xcon import Config
+from xsentinels import Default
 def my_function_is_called_a_lot():
     my_config = Config(directories=[f"/some/dir_path", Default])
     the_value_I_want = my_config.SOME_NAME
@@ -529,25 +529,25 @@ def my_function_is_called_a_lot():
 
 ## Current Config
 
-The Config class is a xyn-resource, `xyn_resource.resource.Resource`;
+The Config class is a xinject, `xinject.dependency.Dependency`;
 meaning that there is a concept that there is a 'current' or 'default' Config object
 that can always be used.
 
-You can get it your self easily anywhere asking `Config` for it's `.resource()`.
+You can get it your self easily anywhere asking `Config` for it's `.grab()`.
 
 ```python
 # Import Config class
-from xyn_config import Config
+from xcon import Config
 
 # Ask Config class for the current one.
-config = Config.resource()
+config = Config.grab()
 ```
 
 Most of the time, it's more convenient to use a special ActiveResourceProxy object that you can
 import and use directly. You can use it as if it's the current config object:
 
 ```python
-from xyn_config import config
+from xcon import config
 
 # Use it as if it's the current/default config object,
 # it will proxy what you ask it to the real object
@@ -557,8 +557,8 @@ config.get('SOME_CONFIG_NAME')
 
 ## Basics
 
-We have a list of `xyn_config.provider.Provider` that we query, in a priority order.
-We also have a list of `xyn_config.directory.Directory` in priority order as well
+We have a list of `xcon.provider.Provider` that we query, in a priority order.
+We also have a list of `xcon.directory.Directory` in priority order as well
 (see [Provider Chain][provider-chain] and [Directory Chain][directory-chain]).
 
 For each directory, we ask each provider for
@@ -574,7 +574,7 @@ and be fast to retrieve.
 
 You can use `Config` as if the config-var is directly on the object:
 ```python
-from xyn_config import Config
+from xcon import Config
 value = Config().SOME_VAR
 ```
 
@@ -584,14 +584,14 @@ it's used it will lookup the current config object and direct the retrieval to i
 
 Here is an example:
 ```python
-from xyn_config import config
+from xcon import config
 value = config.SOME_VAR
 ```
 
 This is equivalent of doing `Config.current().SOME_VAR`. You can call any method
 you want on config that Config supports as well:
 ```python
-from xyn_config import config
+from xcon import config
 value = config.get("SOME_VAR", "some default value")
 ```
 
@@ -602,10 +602,10 @@ Here is the order we check things in when retrieving a value:
 
 1. [Overrides](#overrides) - Value is set directly on `Config` or one of Config's parent(s).
     - For more details about parents, see [Parent Chain][parent-chain].
-2. `xyn_config.providers.environmental.EnvironmentalProvider` first if that provider is
+2. `xcon.providers.environmental.EnvironmentalProvider` first if that provider is
    configured to be used. We don't cache  things from the envirometnal provider, so it's always
    consutled before the cache. See topic [Provider Chain][provider-chain] or the
-   `xyn_config.provider.ProviderChain` class for more details.
+   `xcon.provider.ProviderChain` class for more details.
 3. High-Level flattened cache if it was not disabled (see [Caching][caching]).
 4. All other [Providers][provider-chain] / [Directories](#directory-chain)
      - Looked up based first on [Directory Order][directory-chain]
@@ -619,7 +619,7 @@ Here is the order we check things in when retrieving a value:
 
 Basic, average/normal example:
 ```python
-from xyn_config import config
+from xcon import config
 
 assert config.APP_ENV == "testing"
 
@@ -648,7 +648,7 @@ assert config.SOME_NAME == "Dynamo-V-2"
 
 Here is an example of setting and using an override:
 ```python
-from xyn_config import config
+from xcon import config
 
 # if we have values:
 config.SOME_NAME = "some parent value"
@@ -676,7 +676,7 @@ Example of using defaults.
 I am using a more complex example here, to illustrate how parents and defaults work:
 
 ```python
-from xyn_config import Config, config
+from xcon import Config, config
 
 # If we have these defaults in the 'parent' config:
 config.set_default(f"SOME_OTHER_NAME", "parent-default-value")
@@ -710,8 +710,8 @@ Here is an example of modifying the current config to add a directory in it's cu
 [Directory Chain][directory-chain].
 
 ```python
-from xyn_config import Config
-from xyn_config.directory import Directory
+from xcon import Config
+from xcon.directory import Directory
 
 # Even if this function is called a lot, what we do with
 # config should still be fast enough.
@@ -738,7 +738,7 @@ the current config object may be the root-config object, and therefore have no p
 The parent chain is generally consulted when:
 
 - We are getting the list of providers, directories, getting the cacher, and so on; and we encounter
-  a `xyn_types.default.Default` value while doing this.We then consult the next parent in the
+  a `xsentinels.default.Default` value while doing this.We then consult the next parent in the
   To Resole this `Default` value, Config consults the current parent-chain.
   If when reaching the last parent in the chain, we still have a `Default` value,
   sensible/default values are constructed and used.
@@ -750,10 +750,10 @@ The parent chain is generally consulted when:
 If the Config object has their `use_parent == True` (it defaults to True) then it will allow
 the parent-chain to grow past it's self in the past/previously activated Config objects.
 
-Config is a xyn-resource Resource.  Resource uses a `xyn_resource.context.Context` object to
+Config is a xinject Dependency.  Dependency uses a `xinject.context.XContext` object to
 keep track of current and past resources.
 
-The parent-chain starts with the current config resource (the one in the current Context).
+The parent-chain starts with the current config resource (the one in the current XContext).
 If that context has a parent context, we next grab the Config resource from
 that parent context and check it's `Config.use_parent`. If `True` we keep doing
 this until we reach a Config object without a parent or a `Config.use_parent` 
@@ -762,13 +762,13 @@ that is False.
 If the `Config.use_parent` is `False` on the Config object that is currently being asked for a
 config value:
 
-- If it does not find it's self in the parent-chain (via Context) then the parent-chain
+- If it does not find it's self in the parent-chain (via XContext) then the parent-chain
   will be empty at that moment.  This means it will only consult its self and no other Config object.
   The idea here is the Config object is not a resource in the
-  `xyn_resource.context.Context.parent_chain`
+  `xinject.context.XContext.parent_chain`
   and so is by its self (ie: alone) and should be isolated in this case.
 - If it finds its self, it will allow the parent-chain to grow to the point it finds its
-  self in the Context parent-chain. The purpose of this behavior is  to allow all the 'child'
+  self in the XContext parent-chain. The purpose of this behavior is  to allow all the 'child'
   config objects to be in the parent-chain. If one of these children has the use_parent=False,
   it will stop at that point and **NOT** have any more child config objects included in the
   parent-chain.
@@ -780,55 +780,55 @@ config value:
 We take out of the chain any config object that is myself. The only objects in
 the chain are other Config object instances.
 
-Each config object is consulted until we get an answer that is not a `xyn_types.Default`;
+Each config object is consulted until we get an answer that is not a `xsentinels.Default`;
 once that is found that is what is used.
 
 Example: If we had two Config object, `A` and `B`. And when `B` was originally constructed,
-directory was left at it's `xyn_types.Default` value.
+directory was left at it's `xsentinels.Default` value.
 
 And `A` is the parent of `B` at the time `B` was asked for its directory_chain
-(ie: `xyn_config.config.Config.directory_chain`). This would cause `B` to ask `A` for their
+(ie: `xcon.config.Config.directory_chain`). This would cause `B` to ask `A` for their
 directory_chain because `A` is in `B`'s parent-chain. The directory_chain from `A` is what `B`
-would use for it's list of `xyn_config.directory.Directory`'s to look through when resolving
+would use for it's list of `xcon.directory.Directory`'s to look through when resolving
 a configuration value (see `Config.get`).
 
 Here is an example:
 
 ```python
-from xyn_config import Config
+from xcon import Config
 
 # This is the current config
 A = Config.current()
 
 # We make a new Config, and we DON'T make it 'current'.
-# This means it's not tied to or inside any Context [like `A` above is].
+# This means it's not tied to or inside any XContext [like `A` above is].
 B = Config()
 
 assert B.directory_chain == A.directory_chain
 
 # Import the special config object that always 'acts' like the current config
 # which in this case should be `A`.
-from xyn_config import config
+from xcon import config
 assert B.directory_chain == config.directory_chain
 ```
 
 See [Directory Chain][directory-chain] (later) for what a
-`xyn_config.directory.DirectoryChain` is.
+`xcon.directory.DirectoryChain` is.
 
 ## Provider Chain
 [provider-chain]: #provider-chain
 
-`Config` uses an abstract base class `xyn_config.provider.Provider` to allow for various
-configuration providers. You can see these providers under the `xyn_config.providers` module.
+`Config` uses an abstract base class `xcon.provider.Provider` to allow for various
+configuration providers. You can see these providers under the `xcon.providers` module.
 
 Each `Config` class has an ordered list of these providers in the form of a
-`xyn_config.provider.ProviderChain`. This chain is queried when looking for a config value.
+`xcon.provider.ProviderChain`. This chain is queried when looking for a config value.
 Once a value is found, it will be cached by default [if not disabled] via a
-`xyn_config.providers.dynamo.DynamoCacher`.
+`xcon.providers.dynamo.DynamoCacher`.
 
 The dynamo cacher will cache values that are
-looked up externally, such as by `xyn_config.providers.ssm_param_store.SsmParamStoreProvider`,
-for example. If we use a provider such as `xyn_config.providers.environmental.EnvironmentalProvider`,
+looked up externally, such as by `xcon.providers.ssm_param_store.SsmParamStoreProvider`,
+for example. If we use a provider such as `xcon.providers.environmental.EnvironmentalProvider`,
 since this found it locally in a process environmental variable it does not cache it.
 
 The providers are queried in the order they are defined in the `Config.provider_chain`.
@@ -839,11 +839,11 @@ By `Default`, the `Config.provider_chain` is inherited from the [Parent Chain][p
 
 ### Supported Providers
     
-- `xyn_config.providers.environmental.EnvironmentalProvider`
-- `xyn_config.providers.dynamo.DynamoProvider`
-- `xyn_config.providers.dynamo.DynamoCacher`
-- `xyn_config.providers.ssm_param_store.SsmParamStoreProvider`
-- `xyn_config.providers.secrets_manager.SecretsManagerProvider`
+- `xcon.providers.environmental.EnvironmentalProvider`
+- `xcon.providers.dynamo.DynamoProvider`
+- `xcon.providers.dynamo.DynamoCacher`
+- `xcon.providers.ssm_param_store.SsmParamStoreProvider`
+- `xcon.providers.secrets_manager.SecretsManagerProvider`
 
 .. todo:: Need to document how to setup permissions in a serverless project to provide correct
     access to the specific providers for ssm/dynamo/etc.
@@ -854,8 +854,8 @@ By `Default`, the `Config.provider_chain` is inherited from the [Parent Chain][p
 
 Some providers have a path/directory concept, where they have various different sets of config
 name/values at a specific path. The path is what we call a specific
-`xyn_config.directory.Directory`. We can get the list of directories that will be queried
-via `Config.directory_chain`. It returns a `xyn_config.directory.DirectoryChain` that has
+`xcon.directory.Directory`. We can get the list of directories that will be queried
+via `Config.directory_chain`. It returns a `xcon.directory.DirectoryChain` that has
 a list of directories in a specific order.  We search a specific directory on all of our providers
 before searching the next directory.
 
@@ -887,7 +887,7 @@ There are two types of caching in py-xyn-config:
 
 ### Internal Local Memory Cacher
 
-The `xyn_config.provider.InternalLocalProviderCache` is a resource that is centrally used
+The `xcon.provider.InternalLocalProviderCache` is a resource that is centrally used
 by the other providers (including the DynamoCacher provider) to store what values they have
 retrieved from their service locally, in a sort of local-memory-cache.
 
@@ -909,9 +909,9 @@ You can change the amount of time via two ways:
 - When an instance of `InternalLocalProviderCache` is created, it will look for the environmental
   variable named `CONFIG_INTERNAL_CACHE_EXPIRATION_MINUTES`. If it exists and is true-like
   it's converted into an `int` and then used as the number of minutes before the cache expires.
-- Modifying `xyn_config.provider.InternalLocalProviderCache.expire_time_delta`.
+- Modifying `xcon.provider.InternalLocalProviderCache.expire_time_delta`.
   You can easily modify it by getting the current resource instance and changing the attribute.
-  (via `InternalLocalProviderCache.resource().expire_time_delta`)
+  (via `InternalLocalProviderCache.grab().expire_time_delta`)
       - `expire_time_delta` is a `datetime.timedelta` object. You can use whatever time-units
         you want by allocating a new `timedelta` object.
             - Example: `timedelta(minutes=5, seconds=10)`, for 5 minutes and 10 seconds.
@@ -920,11 +920,11 @@ If environmental variable is not set and nothing changes the `expire_time_delta`
 it defaults to 15 minutes.
 
 You can always reset the entire cache by calling this method on the current resource instance:
-`xyn_config.provider.InternalLocalProviderCache.reset_cache`.
+`xcon.provider.InternalLocalProviderCache.reset_cache`.
 
 #### Local Memory Caching Side Notes
 
-There is also an option on `xyn_config.config.Config.get` that allows you to ignore the local
+There is also an option on `xcon.config.Config.get` that allows you to ignore the local
 memory cache (as a convenience option).
 
 Right now it does this by resetting the entire cache for you before lookup.
@@ -940,7 +940,7 @@ The cache is meant to provide a fast-way to lookup configuration values, and is 
 in which fast/scaled-executing processes such as Lambda's will probably get their values.
 
 The cache has a built-in TTL (time-to-live) after which it will be deleted from the cache.
-In addition, the `xyn_config.providers.dynamo.DynamoCacher` generates a random number and
+In addition, the `xcon.providers.dynamo.DynamoCacher` generates a random number and
 subtracts that from the TTL when querying for values. That way it may see things as not in
 the cache sooner then it normally would without that. The purpose behind this is to not flood
 SSM or other configuration services with a bunch of requests at the same time when the cache
@@ -953,7 +953,7 @@ get the value and put it into the cache if it's a cacheable value [ie: not an en
 variable].
 
 The cache is a flattened list of all of the configuration values for a specific set of
-`xyn_config.providers` and `xyn_config.directory.Directory`'s.
+`xcon.providers` and `xcon.directory.Directory`'s.
 
 Because the order of the Directories and Providers determine which values we find and ultimately
 cache... the cache's Dynamo hash key is made up of:
@@ -984,8 +984,8 @@ First, let's talk about how to disable caching via environmental variables:
 
 - `CONFIG_DISABLE_DEFAULT_CACHER`, if 'true':
     - Only by default will the cache will be disabled.
-    - This only happens while resolving the `Default` on `xyn_config.config.Config.cacher`.
-    - If you set `DynamoCacher` directly on `xyn_config.config.Config.cacher` via code,
+    - This only happens while resolving the `Default` on `xcon.config.Config.cacher`.
+    - If you set `DynamoCacher` directly on `xcon.config.Config.cacher` via code,
     caching will still be used regardless.
     - Using this option disables the cacher without having to also disable the providers,
     this means it will still lookup params from SSM and so on, just not use the cached version.
@@ -1004,9 +1004,9 @@ you don't want to modify the code it's self to disable caching.
 You can set an environmental variable called `CONFIG_DISABLE_DEFAULT_CACHER` to `True` if you
 want to easily disable caching by default.
 
-..important:: The code will use `xyn_config.providers.environmental.EnvironmentalProvider` for this.
+..important:: The code will use `xcon.providers.environmental.EnvironmentalProvider` for this.
     So if you change this environmental variable WHILE in the middle of running the code
-    `xyn_config.providers.environmental.EnvironmentalProvider` via debugger or other means,
+    `xcon.providers.environmental.EnvironmentalProvider` via debugger or other means,
     provider may have already taken its snapshot of the environmental variables and Config
     won't see the change.
     
@@ -1027,21 +1027,21 @@ The `CONFIG_DISABLE_DEFAULT_CACHER` will only disable it if `cacher=Default`
 If you want to permanently disable cacher via code, do the following instead:
 
 {There is an autouse fixture that will disable the cacher during unit tests,
-as an example real-world use-case in xyn-config's pytest_plugin module: `xyn_config.pytest_plugin.xyn_config`}
+as an example real-world use-case in xyn-config's pytest_plugin module: `xcon.pytest_plugin.xcon`}
 
 ```python
-from xyn_config import Config, config
+from xcon import Config, config
 
 # Globally/Permanently:
 config.cacher = None
 
 # Temporarily via `with`:
-from xyn_config import Config
+from xcon import Config
 with Config(cacher=None):
     pass
 
 # Temporarily via decorator:
-from xyn_config import Config
+from xcon import Config
 @Config(cacher=None)
 def some_method():
     pass
@@ -1076,7 +1076,7 @@ You can override a value on a `Config` object in two ways:
 2. Setting it directly as an attribute, ie:
 2. Setting it directly as an attribute, ie:
 ```
-from xyn_config import config
+from xcon import config
 config.SOME_CONFIG_NAME = "some config value"
 ```
 
@@ -1099,7 +1099,7 @@ the value via the providers/cacher like normal (see [Fundamentals][fundamentals]
 
 If you only want to temporarily override a value, you can do something like this:
 ```
-from xyn_config import config
+from xcon import config
 
 # Activate a new Config object instance:
 with Config():
@@ -1141,7 +1141,7 @@ child config object by simply setting the default on the child.
 > :warning: todo: Put an example in here about how it goes though each directory/provider when finding
     a value.
 
-> :warning: todo: Move this into xyn_config, I think this overview would be better suited there
+> :warning: todo: Move this into xcon, I think this overview would be better suited there
     since it talks about the other sub-modules, like providers, cacher, etc.
 
 > :warning: todo: Document/implement new cache key scheme where the RANGE key has the

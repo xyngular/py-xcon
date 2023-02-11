@@ -9,8 +9,8 @@ from typing import Dict, Optional, Any, Mapping
 from .common import handle_aws_exception
 from ..directory import Directory, DirectoryListing, DirectoryOrPath, DirectoryItem, DirectoryChain
 from botocore.exceptions import ClientError
-from xyn_config.provider import AwsProvider, ProviderChain, InternalLocalProviderCache
-from xyn_aws import aws_clients
+from xcon.provider import AwsProvider, ProviderChain, InternalLocalProviderCache
+from xboto import boto_clients
 log = logging.getLogger(__name__)
 
 
@@ -66,7 +66,7 @@ class SecretsManagerProvider(AwsProvider):
     def local_cache(self) -> _LocalSecretsManagerCache:
         # Using default dict so I don't have to worry about allocating the dict's my self later.
         maker = lambda c: _LocalSecretsManagerCache()
-        cacher = InternalLocalProviderCache.resource()
+        cacher = InternalLocalProviderCache.grab()
         return cacher.get_cache_for_provider(provider=self, cache_constructor=maker)
 
     def _available_names_for_directory(self) -> Dict[Directory, DirectoryListing]:
@@ -85,7 +85,7 @@ class SecretsManagerProvider(AwsProvider):
         log.info("Getting full listing of available path/names in AWS Secrets Manager.")
         dir_to_item_map = {}
         try:
-            paginator = aws_clients.secretsmanager.get_paginator('list_secrets')
+            paginator = boto_clients.secretsmanager.get_paginator('list_secrets')
             response = paginator.paginate()
 
             for page in response:
@@ -170,7 +170,7 @@ class SecretsManagerProvider(AwsProvider):
         secret = None
         try:
             log.info(f"Getting value at SecretsManagerProvider path ({item_path})")
-            item_value: Dict[str, Any] = aws_clients.secretsmanager.get_secret_value(
+            item_value: Dict[str, Any] = boto_clients.secretsmanager.get_secret_value(
                 SecretId=item_path
             )
             secret = item_value.get('SecretString')

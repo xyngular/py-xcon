@@ -25,13 +25,13 @@ aws_error_codes_to_ignore = {
 
 
 def handle_aws_exception(exception: Exception, provider: AwsProvider, directory: Directory):
-    """ Used by the `xyn_config.config.Config` providers that connect to AWS.
+    """ Used by the `xcon.config.Config` providers that connect to AWS.
         A common set of code to handle exceptions that happen while getting configuration
         values from various AWS resources.
 
         If we ignore an error, we will log a warning, and then set the directory as
         an error'd directory via `log_ignored_aws_exception`; which in turn calls
-        `xyn_config.provider.AwsProvider.mark_errored_directory` on the provider.
+        `xcon.provider.AwsProvider.mark_errored_directory` on the provider.
         This informs the provider so they don't keep asking for this directory in the future.
     """
     # First check to see if we have a specific `BotoCoreError` subclass of some sort...
@@ -76,13 +76,13 @@ def log_ignored_aws_exception(
 ):
     """
         We will log a warning, and then set the directory as an error'd directory via
-        `xyn_config.provider.AwsProvider.mark_errored_directory` on the provider.
+        `xcon.provider.AwsProvider.mark_errored_directory` on the provider.
 
         This informs the provider so they don't keep asking for this directory in the future.
     Args:
         exception: Exception that tells us about the error.
-        provider (xyn_config.provider.AwsProvider): AwsProvider that had the error.
-        directory (xyn_config.directory.Directory): Directory that had the error.
+        provider (xcon.provider.AwsProvider): AwsProvider that had the error.
+        directory (xcon.directory.Directory): Directory that had the error.
         error_detail: Some extra human redable details about the error.
 
     Returns:

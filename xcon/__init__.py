@@ -5,23 +5,23 @@ See [How To Use](#how-to-use) in README to get started fast.
 
 # Importable Attributes
 
-Here are a few special attributes at the top-level `xyn_config` module that you can easily import.
+Here are a few special attributes at the top-level `xcon` module that you can easily import.
 
 Go to [How To Use](#how-to-use) for more details on how to use this library.
 
-- `xyn_config.config.Config`: Is the main class in by Config module, you can import easily it via
+- `xcon.config.Config`: Is the main class in by Config module, you can import easily it via
 
     ```python
-    from xyn_config import Config
+    from xcon import Config
     ```
 
-- `xyn_config.config.config`: It represents the currently active `xyn_config.config.Config`
+- `xcon.config.config`: It represents the currently active `xcon.config.Config`
     object.
 
     You can grab it via:
 
     ```
-    from xyn_config import config
+    from xcon import config
     ```
 
     For more details see:
@@ -30,11 +30,11 @@ Go to [How To Use](#how-to-use) for more details on how to use this library.
 
        - More about what the 'current config' is:  [Current Config](#current-config).
 
-- `xyn_config.providers`: Easy access to the provider classes.
+- `xcon.providers`: Easy access to the provider classes.
    See [Supported Providers](#supported-providers) for a list of providers.
 
 
-- `xyn_config.config.ConfigSettings`: Used in projects to create a 'ConfigSettings' subclass.
+- `xcon.config.ConfigSettings`: Used in projects to create a 'ConfigSettings' subclass.
     The subclass would allow you easily specify project settings to lazily lookup via Config.
 
 # How To Use

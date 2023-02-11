@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import Dict, Optional, Mapping
 
-from xyn_aws.proxy import aws_clients
+from xboto import boto_clients
 
-from xyn_config.provider import AwsProvider, ProviderChain
+from xcon.provider import AwsProvider, ProviderChain
 
 from .common import handle_aws_exception
 from ..directory import Directory, DirectoryListing, DirectoryOrPath, DirectoryItem, DirectoryChain
@@ -19,7 +19,7 @@ class SsmParamStoreProvider(AwsProvider):
     def _get_params_paginator(self):
         paginator = self._store_get_params_paginator
         if not paginator:
-            paginator = aws_clients.ssm.get_paginator('get_parameters_by_path')
+            paginator = boto_clients.ssm.get_paginator('get_parameters_by_path')
             self._store_get_params_paginator = paginator
         return paginator
 

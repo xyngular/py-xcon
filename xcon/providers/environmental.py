@@ -3,10 +3,10 @@ from __future__ import annotations
 import os
 from typing import Optional, Mapping, Dict, Any
 
-from xyn_config.directory import (
+from xcon.directory import (
     DirectoryOrPath, DirectoryItem, DirectoryChain, Directory, DirectoryListing
 )
-from xyn_config.provider import Provider, ProviderChain, InternalLocalProviderCache
+from xcon.provider import Provider, ProviderChain, InternalLocalProviderCache
 
 
 class EnvironmentalProvider(Provider):
@@ -47,7 +47,7 @@ class EnvironmentalProvider(Provider):
             return self._user_provided_cache
 
         maker = lambda c: self._create_snapshot(None, c)
-        cacher = InternalLocalProviderCache.resource()
+        cacher = InternalLocalProviderCache.grab()
         return cacher.get_cache_for_provider(provider=self, cache_constructor=maker)
 
     def __init__(self, env_vars: Optional[Dict[str, Any]] = None):
@@ -85,7 +85,7 @@ class EnvironmentalProvider(Provider):
 
             internal_cache_provider: If provided, we will use this as the object to store
                 our environmental snapshot on.
-                If not provided, we will get the `InternalLocalProviderCache.resource()`
+                If not provided, we will get the `InternalLocalProviderCache.grab()`
                 (current instance).
 
                 In either case, we won't use a `InternalLocalProviderCache` if you pass
@@ -100,7 +100,7 @@ class EnvironmentalProvider(Provider):
         if from_env_dict is None:
             # If an internal cacher not provided, get current one.
             if not internal_cache_provider:
-                internal_cache_provider = InternalLocalProviderCache.resource()
+                internal_cache_provider = InternalLocalProviderCache.grab()
 
             from_env_dict = os.environ
             msg_prefix = "Snapshotted os.environ"

@@ -17,13 +17,12 @@ from __future__ import annotations
 
 import pytest
 
-from xyn_config.providers import EnvironmentalProvider
-from xyn_config import Config
+from xcon.providers import EnvironmentalProvider
+from xcon import Config
 
 
 @pytest.fixture(autouse=True)
-@pytest.mark.order(-1200)
-def xyn_config(xyn_context):
+def xcon_test_config(xinject_test_context):
     """
     Important: This fixture should automatically be imported and auto-used as long as
     `xyn-config` is installed as a dependency in any project.
@@ -87,12 +86,12 @@ def xyn_config(xyn_context):
     # (The xyn_context fixture throws always all resource objects before each test,
     #  so configuring config with base-line values before each unit test)
     _setup_config_for_testing()
-    return Config.resource()
+    return Config.grab()
 
 
 def _setup_config_for_testing():
     # Get config object from current/new context:
-    config = Config.resource()
+    config = Config.grab()
 
     # We default to ONLY use 'EnvironmentalProvider'.
     # We tell it not to use a cacher or parent, not testing those aspects in this test.

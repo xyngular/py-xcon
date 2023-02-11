@@ -10,14 +10,14 @@ from typing import Dict, Optional, Callable, Iterable, Sequence, Tuple
 from typing import Mapping
 
 from boto3.dynamodb import conditions
-from xyn_aws.dynamodb import DynamoDB
-from xyn_types import Default
-from xyn_utils.loop import loop
+from xboto.resource import dynamodb
+from xsentinels import Default
+from xloop import xloop
 
-from xyn_config.directory import Directory, DirectoryListing, DirectoryOrPath, DirectoryItem, \
+from xcon.directory import Directory, DirectoryListing, DirectoryOrPath, DirectoryItem, \
     DirectoryChain
-from xyn_config.exceptions import ConfigError
-from xyn_config.provider import ProviderCacher, ProviderChain, AwsProvider, \
+from xcon.exceptions import ConfigError
+from xcon.provider import ProviderCacher, ProviderChain, AwsProvider, \
     InternalLocalProviderCache
 from .common import handle_aws_exception
 
@@ -30,16 +30,13 @@ class DynamoProvider(AwsProvider):
     This provider allows one to have a structured list or dictionary. It supports JSON
     and will parse/decode it when it gets it from Dynamo into a real Python dict/list/str/etc!
     """
-    attributes_to_skip_while_copying = ['_table']
-
-    _directories: Dict[Directory, DirectoryListing]
-    _table: _ConfigDynamoTable
-
     name = "dynamo"
+    _directories: Dict[Directory, DirectoryListing]
 
-    def __init__(self):
-        super().__init__()
-        self._table = _ConfigDynamoTable()
+    @property
+    def _table(self) -> _ConfigDynamoTable:
+        # todo: make table name configurable
+        return _ConfigDynamoTable(table_name='global-config')
 
     def get_item(
             self,
@@ -57,7 +54,7 @@ class DynamoProvider(AwsProvider):
         if listing:
             return listing.get_item(name)
 
-        # We need to lookup the directory listing from Dynamo.
+        # We need to look up the directory listing from Dynamo.
         items = []
 
         try:
@@ -105,7 +102,7 @@ class DynamoCacher(ProviderCacher):
         1. Hash key: Is the `environ` method parameter that gets passed to the methods on me.
            It's normally a string in this format: `/{SERVICE_NAME}/{APP_ENV}`.
            Also, normally apps/services are only given access to one specific hash-key.
-           This hash-key should represent the app and it's current environment.
+           This hash-key should represent the app and its current environment.
         2. Range/Sort key: Contains the variable name, providers and directory paths used
            to lookup value. This makes it so the app can do various queries using various
            different providers/directories and the cacher can cache those results correctly
@@ -115,26 +112,31 @@ class DynamoCacher(ProviderCacher):
         You don't need to parse the rage/sort-key.
         All of its components are also separate attributes in the table on the row.
 
-        ## Resource Details
+        ## Dependency Details
 
-        Right now the `DynamoCacher` is a `xyn_resource.resource.Resource`
-        resource, you can grab the current one by calling `DynamoCacher.resource()`.
+        Right now the `DynamoCacher` is a `xinject.dependency.Dependency`
+        resource, you can grab the current one by calling `DynamoCacher.grab()`.
 
-        More specifically: we are a `xyn_resource.resource.Resource`, which means that there is
-        normally only one of us around. See xyn-resource library for more details.
+        More specifically: we are a `xinject.dependency.Dependency`, which means that there is
+        normally only one of us around. See xinject library for more details.
     """
+    name = "cacher"
+    _ttl: dt.datetime
+
     def retrieved_items_map(self, directory: DirectoryOrPath) -> Mapping[str, DirectoryItem]:
         """ This is mostly useful for getting this to cache, so I am not going to implement it
-            in the cacher (if we ever do, the `xyn_config.provider.ProviderChain` will have to
+            in the cacher (if we ever do, the `xcon.provider.ProviderChain` will have to
             figure out how to skip us).
 
         """
         return {}
 
-    name = "cacher"
-    attributes_to_skip_while_copying = ['_table']
-    _table: _ConfigDynamoTable
-    _ttl: dt.datetime
+    @property
+    def _table(self) -> _ConfigDynamoTable:
+        # todo: make table name configurable
+        table = _ConfigDynamoTable(table_name='global-configCache', cache_table=True)
+        table.append_source = " - via cacher"
+        return table
 
     @dataclasses.dataclass
     class _LocalCache:
@@ -149,9 +151,9 @@ class DynamoCacher(ProviderCacher):
 
     @property
     def local_cache(self) -> _LocalCache:
-        # Using default dict so I don't have to worry about allocating the dict's my self later.
+        # Using default dict, so I don't have to worry about allocating the dict's my self later.
         maker = lambda c: DynamoCacher._LocalCache()
-        cacher = InternalLocalProviderCache.resource()
+        cacher = InternalLocalProviderCache.grab()
         return cacher.get_cache_for_provider(provider=self, cache_constructor=maker)
 
     def __init__(self):
@@ -172,7 +174,6 @@ class DynamoCacher(ProviderCacher):
         12 hours in the future with a random +/- 1500 seconds added on is what we currently do.
         Thinking about making it a shorter period of time [a couple of hours].
         """
-        self._table = _ConfigDynamoTable(table_name='global-configCache', cache_table=True)
         self._table.append_source = " - via cacher"
 
         super().__init__()
@@ -278,7 +279,7 @@ class DynamoCacher(ProviderCacher):
                 a provider and so accepts the parameter.
             directory_chain: Current directory chain that is being used to lookup value.
                 Used as part of the rang-key in the Dynamo table.
-            provider_chain (xyn_config.provider.ProviderChain): Current provider chain
+            provider_chain (xcon.provider.ProviderChain): Current provider chain
                 that is being used to lookup value. Used as part of the rang-key in the Dynamo
                 table.
             environ:
@@ -288,7 +289,7 @@ class DynamoCacher(ProviderCacher):
                 Example Directory Path: `/hubspot/testing`
 
         Returns:
-            xyn_config.directory.DirectoryItem: If we have a cached item, this is it.
+            xcon.directory.DirectoryItem: If we have a cached item, this is it.
             None: Otherwise we return None indicating nothing has been cached.
         """
         # Cache needs all of this stuff to do proper caching.
@@ -344,7 +345,7 @@ class DynamoCacher(ProviderCacher):
             items = self._table.get_items_for_directory(directory=environ, expire_time=expire_time)
 
             # Ensure we have a list, and not a generator.
-            items = tuple(loop(items))
+            items = tuple(xloop(items))
 
             # Log about stuff we retrieved from the cache table.
             self.log_about_items(items=items, path=environ.path)
@@ -397,12 +398,18 @@ class DynamoCacher(ProviderCacher):
 # in this library (it's a bit heavy).  So for now, we are duplicating some of that functionality
 # for use here, in a much simpler (but WAY less feature-rich) way:
 class _ConfigDynamoTable:
-    append_source = "dynamo"
+    """
+    Meant to be a simple abstract around dynamo table, just enough for our needs in this
+    `dynamo.py` module file...
 
-    @property
-    def db(self) -> DynamoDB:
-        """ DynamoDB resource. """
-        return DynamoDB.resource()
+    After doing all the needed work for getting/updating items and so forth,
+    you should throw-away the `_ConfigDynamoTable` object and lazily create a new one next time a
+    call from the user comes in that needs the table.
+
+    This helps support dependency injection of the dynamodb boto3 resource via xinject
+    (always uses dependency when called, so it can be changed/injected by user).
+    """
+    append_source = "dynamo"
 
     @property
     def table_name(self) -> str:
@@ -414,18 +421,17 @@ class _ConfigDynamoTable:
         """ DynamoDB table resource.
             We lazily get the resource, so we don't have to verify/create it if not needed.
         """
-
         table = self._table
         if table is not None:
             return table
 
-        table = self.db.table(name=self.table_name, table_creator=self._create_table)
+        table = dynamodb.Table(self.table_name)
         self._table = table
         return table
 
     def __init__(
             self,
-            table_name: str = "global-config",
+            table_name: str,
             cache_table: bool = False
     ):
         super().__init__()
@@ -490,9 +496,9 @@ class _ConfigDynamoTable:
                 that DynamoDB only guarantees an expired item will be deleted within 48 hours,
                 so it will only be returned if DynamoDB has not deleted the item yet.
             If dt.datetime:
-                I'll use the provided datetime for the expire time. Items will only be returned
+                I'll use the provided datetime for the expiry time. Items will only be returned
                 if they don't have an expiration time, or if their expiration time is greater
-                then the provided date/time.
+                than the provided date/time.
 
         :return:
         """
@@ -566,45 +572,6 @@ class _ConfigDynamoTable:
 
     _table_name: str
     _verified_table_status: bool
-
-    def _create_table(self, dynamo: DynamoDB = None):
-        # This is mainly here to create table when mocking aws for unit tests. If the table
-        # really does not exist in reality, this also can create it.
-
-        # Time To Live Notes:
-        #
-        # We can't enable TimeToLive during table creation, we have to wait until after it's
-        # created. This is a minor issue, since the table will still function correctly,
-        # the queries will still filter out expired items like normal.  The only difference
-        # is we could get charged extra for storage we are not using. We need to still filter
-        # items out of our queries because deletion does not happen immediately [could take up
-        # to 48 hours].
-        #
-        # At this point, it's expected that you'll have to go into the AWS dynamo console
-        # to setup automatic TimeToLive item deletion for a table.
-        return dynamo.db.create_table(
-            TableName=self.table_name,
-            KeySchema=[
-                # Partition Key
-                {'AttributeName': 'directory', 'KeyType': 'HASH'},
-                # Sort Key
-                {'AttributeName': 'name', 'KeyType': 'RANGE'}
-            ],
-            AttributeDefinitions=[
-                {'AttributeName': 'directory', 'AttributeType': 'S'},
-                {'AttributeName': 'name', 'AttributeType': 'S'}
-            ],
-            # todo:
-            #  YOu need to use a newer-boto3 for this to work than what lamda provides.
-            #  HOWEVER, the config table should always exist, so we should not have to really
-            #  worry about it. If the able already exists we won't attempt to create it.
-            BillingMode='PAY_PER_REQUEST',
-            Tags=[{'Key': 'DDBTableGroupKey', 'Value': 'xyn_config'}],
-            SSESpecification={
-                "Enabled": True
-            }
-        )
-
     _batch_writer = None
 
     def _paginate_all_items_generator(

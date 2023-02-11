@@ -11,5 +11,5 @@ default_provider_types: List[Type[Provider]] = [
     SecretsManagerProvider,
     SsmParamStoreProvider
 ]
-""" Set of default provider types and order to use them in for `xyn_config.config.Config`.
+""" Set of default provider types and order to use them in for `xcon.config.Config`.
 """

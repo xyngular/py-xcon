@@ -12,13 +12,13 @@ __pdoc__ = {
     "DirectoryItem.__str__": True,
 }
 
-from xyn_dateutils.dates import parse_iso_datetime
+import ciso8601
 
-from xyn_types import Default
-from xyn_types.default import JsonDict
-from xyn_utils.loop import loop
+from xsentinels import Default
+from .types import JsonDict
+from xloop import xloop
 
-from xyn_config.exceptions import ConfigError
+from xcon.exceptions import ConfigError
 
 
 @dataclass(eq=True, frozen=True)
@@ -224,7 +224,7 @@ Type used to indicate a `Directory` or a `str` object [can be either].
 
 DirectoryItemValue = Union[JsonDict, list, str, int, None]
 """ A type indicating the of values a `DirectoryItem.value` could return.
-    Generally, it's either a `xyn_types.JsonDict` or a `list`/`str`/`int`/`None`.
+    Generally, it's either a `xsentinels.JsonDict` or a `list`/`str`/`int`/`None`.
     Basically, the basic str/int in combination with what you generally could store in JSON.
 """
 
@@ -483,7 +483,7 @@ class DirectoryItem:
         cache_concat_provider_names = json.get('cache_concat_provider_names')
 
         created_at = json.get('created_at', None)
-        created_at = parse_iso_datetime(created_at) if created_at else None
+        created_at = ciso8601.parse_datetime(created_at) if created_at else None
 
         return DirectoryItem(
             directory=directory,
@@ -557,7 +557,7 @@ class DirectoryListing:
     def __init__(self, directory: Directory = None, items: Iterable[DirectoryItem] = None):
         self.directory = directory
         self._items = {}
-        for item in loop(items):
+        for item in xloop(items):
             self.add_item(item)
 
     def get_any_item(self) -> Optional[DirectoryItem]:

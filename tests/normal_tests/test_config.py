@@ -4,25 +4,25 @@ import os
 import time
 from typing import Type
 
-from xyn_config.providers.common import AwsProvider
+from xcon.providers.common import AwsProvider
 
-from xyn_aws import aws_clients
+from xboto import boto_clients
 import moto
 import pytest
-from xyn_types import Default
-from xyn_utils.loop import loop
+from xsentinels import Default
+from xloop import xloop
 
-from xyn_config import Config, config
-from xyn_config.directory import DirectoryItem, Directory
-from xyn_config.provider import ProviderCacher, InternalLocalProviderCache
-from xyn_config.providers import (
+from xcon import Config, config
+from xcon.directory import DirectoryItem, Directory
+from xcon.provider import ProviderCacher, InternalLocalProviderCache
+from xcon.providers import (
     EnvironmentalProvider,
     DynamoProvider,
     SsmParamStoreProvider,
     SecretsManagerProvider,
     DynamoCacher, default_provider_types,
 )
-from xyn_config.providers.dynamo import _ConfigDynamoTable
+from xcon.providers.dynamo import _ConfigDynamoTable
 
 DEFAULT_TESTING_PROVIDERS = [EnvironmentalProvider, SecretsManagerProvider, SsmParamStoreProvider]
 
@@ -102,7 +102,7 @@ def test_env_provider():
     assert config.get_value("some_other_non_existant_env_var") is None
 
 
-@moto.mock_dynamodb2
+@moto.mock_dynamodb
 @moto.mock_ssm
 @moto.mock_secretsmanager
 def test_config_disable_via_env_var():
@@ -127,20 +127,17 @@ def test_config_disable_via_env_var():
                 assert isinstance(config.resolved_cacher, DynamoCacher)
 
 
-@moto.mock_dynamodb2
+@moto.mock_dynamodb
 @moto.mock_ssm
 @moto.mock_secretsmanager
 @config_with_env_dyn_ssm_secrets_providers
 def test_direct_class_access(directory: Directory):
     config.TEST_NAME = "myTestValue"
     # When you access a config var via the default config, it should lookup the current
-    # default config automatically [via current Context] and use that to get the var.
+    # default config automatically [via current XContext] and use that to get the var.
     assert config.TEST_NAME == 'myTestValue'
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 @config_with_env_dyn_ssm_secrets_providers
 def test_basic_configs(directory: Directory):
     # Basic defaults-test.
@@ -151,9 +148,6 @@ def test_basic_configs(directory: Directory):
     assert config.TEST_NAME == 'myTestValue'
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 @config_with_env_dyn_ssm_secrets_providers
 def test_config_for_unconfiged_param(directory: Directory):
     # Basic defaults-test.
@@ -162,9 +156,6 @@ def test_config_for_unconfiged_param(directory: Directory):
     assert config.TEST_NAME_OTHER is None
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 @config_with_env_dyn_ssm_secrets_providers
 def test_direct_parent_behavior(directory: Directory):
     config.set_default("A_DEFAULT", 'parent-default')
@@ -187,10 +178,14 @@ def test_direct_parent_behavior(directory: Directory):
     config_providers = [
         p for p in config.provider_chain.providers if not isinstance(p, ProviderCacher)
     ]
-    assert list(loop(child.provider_chain.providers)) == list(loop(config_providers))
+    assert list(xloop(child.provider_chain.providers)) == list(xloop(config_providers))
 
     child = Config(directories=["/hello/another"])
-    assert list(loop(child.directory_chain.directories)) == [Directory.from_path("/hello/another")]
+
+    assert list(
+        xloop(child.directory_chain.directories)
+    ) == [Directory.from_path("/hello/another")]
+
     assert child.cacher is Default
     assert child.A_DEFAULT == 'parent-default'
     child.A_DEFAULT = 'child-override'
@@ -202,14 +197,11 @@ def test_direct_parent_behavior(directory: Directory):
         p if not isinstance(p, ProviderCacher) else child.cacher
         for p in config.provider_chain.providers
     ]
-    child_providers = list(loop(child.provider_chain.providers))
-    parent_providers = list(loop(config.provider_chain.providers))
+    child_providers = list(xloop(child.provider_chain.providers))
+    parent_providers = list(xloop(config.provider_chain.providers))
     assert child_providers == parent_providers
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 @config_with_env_dyn_ssm_secrets_providers
 def test_env_are_higher_priority_than_cacher(directory: Directory):
     # Re-enable the cacher by default, so we can test cacher-related features
@@ -222,7 +214,7 @@ def test_env_are_higher_priority_than_cacher(directory: Directory):
     config.set_default('TEST_CACHER_NOT_USED', 'default-value')
 
     # Put some test-data in ssm.
-    client = aws_clients.ssm
+    client = boto_clients.ssm
     client.put_parameter(
         Name=f'{directory.path}/test_cacher_not_used', Value="wrongValue", Type="String"
     )
@@ -234,7 +226,7 @@ def test_env_are_higher_priority_than_cacher(directory: Directory):
     with EnvironmentalProvider(env_vars={'TEST_CACHER_NOT_USED': 'rightValue'}):
         # Ensure the original ssm value made it into the cacher;
         # we are verifying that the cache got updated correctly with this check.
-        cacher_obj = DynamoCacher.resource()
+        cacher_obj = DynamoCacher.grab()
         assert (
             cacher_obj.get_value(
                 name='TEST_CACHER_NOT_USED',
@@ -250,13 +242,10 @@ def test_env_are_higher_priority_than_cacher(directory: Directory):
         assert config.TEST_CACHER_NOT_USED == "rightValue"
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 @config_with_env_dyn_ssm_secrets_providers
 def test_basic_config(directory: Directory):
     # Put some test-data in ssm
-    client = aws_clients.ssm
+    client = boto_clients.ssm
     client.put_parameter(Name=f'{directory.path}/test_name', Value="testValue2", Type="String")
 
     # Make sure moto is working....
@@ -268,9 +257,6 @@ def test_basic_config(directory: Directory):
     assert v2 == 'testValue2'
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 @config_with_env_dyn_ssm_secrets_providers
 @pytest.mark.parametrize(
     "expected_values",
@@ -280,14 +266,14 @@ def test_basic_config(directory: Directory):
     ],
 )
 def test_ssm_and_dynamo(directory: Directory, expected_values):
-    client = aws_clients.ssm
+    client = boto_clients.ssm
     client.put_parameter(
         Name=f'{directory.path}/test_name',
         Value="ssmValue",
         Type="String",
     )
 
-    table = _ConfigDynamoTable()
+    table = _ConfigDynamoTable(table_name='global-config')
     item = DirectoryItem(
         name=expected_values['cache_item_name'],
         directory=directory,
@@ -350,7 +336,6 @@ def test_basic_confg_features_with_parent_chain(directory: Directory):
     assert current_config.SOME_OTHER_NAME == "parent-default-value"
 
 
-@moto.mock_ssm
 @Config(providers=[SsmParamStoreProvider])  # Not using EnvironmentalProvider, only Ssm...Provider.
 def test_exported_values(directory: Directory):
     # This is for making sure the default value does not somehow override other ways
@@ -361,7 +346,7 @@ def test_exported_values(directory: Directory):
     config.add_export(service=another_service)
 
     # Put some test-data in ssm.
-    client = aws_clients.ssm
+    client = boto_clients.ssm
     client.put_parameter(
         Name=f'/{another_service}/export/{directory.env}/some_exported_name',
         Value="an-exported-value",
@@ -375,9 +360,6 @@ def test_exported_values(directory: Directory):
     #   values don't override any of them.
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
     # Re-enable the cacher by default, so we can test cacher-related features
     # (it's set to None by default for unit tests)
@@ -397,7 +379,7 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
 
     # Ensure the values did not go into the cache
     # we are verifying that the cache got updated correctly with this check.
-    cacher_obj = DynamoCacher.resource()
+    cacher_obj = DynamoCacher.grab()
     assert (
         cacher_obj.get_value(
             name='TEST_CACHER_NOT_USED',
@@ -410,9 +392,6 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
     )
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 @config_with_env_dyn_ssm_secrets_providers
 def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
     # Re-enable the cacher by default, so we can test cacher-related features
@@ -439,7 +418,7 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
 
     # Ensure the values did not go into the cache
     # we are verifying that the cache got updated correctly with this check.
-    cacher_obj = DynamoCacher.resource()
+    cacher_obj = DynamoCacher.grab()
     cached_item = cacher_obj.get_item(
         name='TEST_CACHER_NOT_USED',
         directory=directory,
@@ -452,7 +431,7 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
     assert cached_item.directory.is_non_existent
 
     # Put some test-data in ssm.
-    client = aws_clients.ssm
+    client = boto_clients.ssm
     client.put_parameter(
         Name=f'{directory.path}/test_cacher_not_used', Value="ssmValue", Type="String"
     )
@@ -487,59 +466,9 @@ def test_config_item_not_logging_value(directory: Directory):
     assert 'my-value' in item.__repr__()
 
 
-@pytest.mark.parametrize(
-    "provider_type",
-    [
-        SecretsManagerProvider,
-        DynamoProvider,
-        SsmParamStoreProvider
-    ],
-)
-# Must run it before the others, or boto will 'cache' the config-file;
-# If the config file does not exist, it looks it up each time.
-# So the other tests should run fine and be able to find a default region.
-@pytest.mark.order(1)
-def test_providers_is_ok_without_region(provider_type: Type[AwsProvider]):
-    old_region = None
-    try:
-        # Point boto to a non-existent file;
-        # the easiest way I found to get boto to raise a NoRegion error.
-        os.environ['AWS_CONFIG_FILE'] = '/dev/null'
-        if 'AWS_DEFAULT_REGION' in os.environ:
-            old_region = os.environ['AWS_DEFAULT_REGION']
-            del os.environ['AWS_DEFAULT_REGION']
-
-        os.environ['AWS_CONFIG_FILE'] = '/dev/null'
-
-        provider = provider_type()
-
-        # If should not get an exception, it should be handled for us this this should return None
-        item = provider.get_item(
-            name='some-name',
-            directory=Directory.from_path("/a/b"),
-            directory_chain=None,
-            provider_chain=None,
-            environ=Directory(service='unittest', env='unittest')
-        )
-
-        # It should look nothing up.
-        assert item is None
-
-        # See if we handled the correct error and not some other error.
-        from xyn_config.providers.common import aws_error_classes_to_ignore
-        assert provider.botocore_error_ignored_exception
-        assert type(provider.botocore_error_ignored_exception) in aws_error_classes_to_ignore
-    finally:
-        # Cleanup, this could contaminate other unit tests, remove it.
-        del os.environ['AWS_CONFIG_FILE']
-        if old_region is not None:
-            os.environ['AWS_DEFAULT_REGION'] = old_region
-
-
-@moto.mock_secretsmanager
 def test_secrets_manager_provider():
     config.providers = [EnvironmentalProvider, SecretsManagerProvider]
-    aws_clients.secretsmanager.create_secret(
+    boto_clients.secretsmanager.create_secret(
         Name='/testing/unit/my_secret',
         SecretString='my-secret-value',
     )
@@ -548,10 +477,9 @@ def test_secrets_manager_provider():
     assert config.get_value('MY_SECRET') == 'my-secret-value'
 
 
-@moto.mock_secretsmanager
 def test_secrets_manager_provider_case_insensative():
     config.providers = [EnvironmentalProvider, SecretsManagerProvider]
-    aws_clients.secretsmanager.create_secret(
+    boto_clients.secretsmanager.create_secret(
         Name='/testing/unit/MY_secret',
         SecretString='my-secret-value',
     )
@@ -560,16 +488,13 @@ def test_secrets_manager_provider_case_insensative():
     assert config.get_value('MY_SECRET') == 'my-secret-value'
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 @Config(providers=DEFAULT_TESTING_PROVIDERS, cacher=DynamoCacher)
 def test_expire_internal_local_cache(directory: Directory):
     # Basic defaults-test.
-    InternalLocalProviderCache.resource().expire_time_delta = dt.timedelta(milliseconds=250)
+    InternalLocalProviderCache.grab().expire_time_delta = dt.timedelta(milliseconds=250)
 
     path = f'/{config.SERVICE_NAME}/{config.APP_ENV}/exp_test_value'
-    aws_clients.ssm.put_parameter(
+    boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue",
         Type="String",
@@ -579,7 +504,7 @@ def test_expire_internal_local_cache(directory: Directory):
     assert config.get('exp_test_value') == 'expiringTestValue'
 
     # Change value in SSM
-    aws_clients.ssm.put_parameter(
+    boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue2",
         Type="String",
@@ -610,14 +535,11 @@ def test_expire_internal_local_cache(directory: Directory):
     assert config.get('exp_test_value') == 'expiringTestValue2'
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 @Config(providers=DEFAULT_TESTING_PROVIDERS, cacher=DynamoCacher)
 def test_cache_uses_env_vars_by_default(directory: Directory):
     # First, put in value in SSM
     path = f'/{config.SERVICE_NAME}/{config.APP_ENV}/exp_test_value_3'
-    aws_clients.ssm.put_parameter(
+    boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue3",
         Type="String",
@@ -660,16 +582,13 @@ def test_cache_uses_env_vars_by_default(directory: Directory):
         os.environ.pop('APP_ENV')
 
 
-@moto.mock_dynamodb2
-@moto.mock_ssm
-@moto.mock_secretsmanager
 @Config(providers=DEFAULT_TESTING_PROVIDERS, cacher=DynamoCacher)
 def test_dynamo_cacher_retrieves_new_values_after_local_cache_expires(directory: Directory):
     # Basic defaults-test.
-    InternalLocalProviderCache.resource().expire_time_delta = dt.timedelta(milliseconds=250)
+    InternalLocalProviderCache.grab().expire_time_delta = dt.timedelta(milliseconds=250)
 
     path = f'/{config.SERVICE_NAME}/{config.APP_ENV}/exp_test_value'
-    aws_clients.ssm.put_parameter(
+    boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue",
         Type="String",
@@ -679,7 +598,7 @@ def test_dynamo_cacher_retrieves_new_values_after_local_cache_expires(directory:
     assert config.get('exp_test_value') == 'expiringTestValue'
 
     # Change value in SSM
-    aws_clients.ssm.put_parameter(
+    boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue2",
         Type="String",

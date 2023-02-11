@@ -1,10 +1,10 @@
 """
-Main config module. Key pieces such as `xyn_config.config.Config` and
-`xyn_config.config.config` are imported directly into "xyn_config".
+Main config module. Key pieces such as `xcon.config.Config` and
+`xcon.config.config` are imported directly into "xcon".
 
 Very quick example, this will grab `SOME_CONFIG_ATTR` for you:
 
->>> from xyn_config.config import config
+>>> from xcon.config import config
 >>> config.SOME_CONFIG_ATTR
 
 .. todo:: Link to the readme.md docs
@@ -21,14 +21,16 @@ from typing import (
 # Note: pdoc3 can't resolve type-hints inside of method parameters with this enabled.
 #   disabling it. (leaving it here for future reference for others)
 # from __future__ import annotations
-from xyn_logging.loggers import XynLogger
-from xyn_resource import Context, ActiveResourceProxy, Resource
-from xyn_settings import Settings, SettingsField
-from xyn_settings.settings import SettingsRetriever
-from xyn_types import Default, OrderedDefaultSet, OrderedSet
-from xyn_types.default import DefaultType
-from xyn_utils.bool import bool_value
-from xyn_utils.loop import loop
+from xinject import XContext, Dependency
+from xsettings import Settings, SettingsField
+from xsettings.retreivers import SettingsRetrieverProtocol
+from xsentinels import Default
+from .types import OrderedDefaultSet, OrderedSet
+from xsentinels.default import DefaultType
+from xbool import bool_value
+from xloop import xloop
+
+from logging import getLogger
 
 from .directory import Directory, DirectoryItem, DirectoryListing, DirectoryOrPath, DirectoryChain
 from .exceptions import ConfigError
@@ -37,7 +39,7 @@ from .providers import EnvironmentalProvider
 from .providers import default_provider_types
 from .providers.dynamo import DynamoCacher
 
-xlog = XynLogger(__name__)
+xlog = getLogger(__name__)
 
 T = TypeVar('T')
 
@@ -66,7 +68,7 @@ class _ParentChain:
         parents = self.parents
         if not isinstance(parents, tuple):
             # Convert to a tuple
-            object.__setattr__(self, 'parents', tuple(loop(parents)))
+            object.__setattr__(self, 'parents', tuple(xloop(parents)))
 
     def start_cursor(self) -> Optional[_ParentCursor]:
         """
@@ -95,7 +97,7 @@ def _check_proper_cacher_or_raise_error(cacher):
     )
 
 
-class Config(Resource):
+class Config(Dependency):
     """
     Lets you easily get configuration values from various sources.
 
@@ -156,11 +158,11 @@ class Config(Resource):
 
     @classmethod
     def current(cls):
-        """ Calls 'cls.resource()', just am alternative name for the same thing, may make things
+        """ Calls 'cls.grab()', just am alternative name for the same thing, may make things
             a bit more self-documenting, since `Config` could be used in a lot of places.
 
         """
-        return cls.resource()
+        return cls.grab()
 
     def __init__(
             self, *,
@@ -181,9 +183,9 @@ class Config(Resource):
 
         Parameters
         ---------
-        directories: Union[Iterable[xyn_config.directory.DirectoryOrPath], xyn_types.Default]
+        directories: Union[Iterable[xcon.directory.DirectoryOrPath], xsentinels.Default]
             List of directories/paths to search when querying for a name.
-            If `xyn_types.Default`: Uses the first one from [Parent Chain](#parent-chain).
+            If `xsentinels.Default`: Uses the first one from [Parent Chain](#parent-chain).
             If everyone in the parent chain is set to `Default`, uses `standard_directories()`.
 
             Various ways to change what directories to use:
@@ -214,12 +216,12 @@ class Config(Resource):
             and then if it still can't find the var it will next look at the current
             app/service for the var.
 
-        providers: Union[Iterable[Type[[xyn_config.provider.Provider]], [xyn_types.Default]
+        providers: Union[Iterable[Type[[xcon.provider.Provider]], [xsentinels.Default]
             List of provider types to use. If set to `Default`, uses the first one from
             [Parent Chain](#parent-chain). If everyone in the parent chain is set to `Default`,
-            uses `xyn_config.providers.default.default_provider_types`.
+            uses `xcon.providers.default.default_provider_types`.
 
-        cacher: Type[xyn_config.provider.ProviderCacher]
+        cacher: Type[xcon.provider.ProviderCacher]
             In the future, I may allow other cachers to be passed in via this param, but right
             now only the DynamoCacher is used and the only values you can use are:
 
@@ -227,7 +229,7 @@ class Config(Resource):
                 - No flattened high-level caching will be used. The individual
                 providers will still cache things internally per-directory/provider.
 
-            - If left as `xyn_types.Default`:
+            - If left as `xsentinels.Default`:
                 - Must have a service/enviroment we can use (ie: APP_ENV / SERVICE_NAME).
                 If so, we will attempt to read/write to a special Dynamo table that has
                 a flattened list of name/value pairs that are tied to the current service,
@@ -253,7 +255,7 @@ class Config(Resource):
             [Parent Chain](#parent-chain) is used to find:
 
                - Overridden config values; these are values that set directly
-                 on the Config object; ie: `xyn_config.config.config`.CONFIG_NAME = "Some Value to Override With"
+                 on the Config object; ie: `xcon.config.config`.CONFIG_NAME = "Some Value to Override With"
 
                - Default values; these are used when config can find no other value for a
                  particular .CONFIG_NAME. See `set_default`
@@ -273,15 +275,15 @@ class Config(Resource):
             in the [Parent Chain](#parent-chain) has `use_parent==false`, the parent-chain
             will stop there.
 
-            By `xyn_types.Default`:
-               We lookup the parent by getting the current Config via current Context;
+            By `xsentinels.Default`:
+               We lookup the parent by getting the current Config via current XContext;
                If that's ourselves, then we grab the parent context's Config resource.
                This lookup occurs every time we are asked for a .CONFIG_NAME to see if
                there is an override for it, etc. [see `parent is used to find` section above].
                That means the Config's parent can change depending on the current context the
                time the .CONFIG_NAME is asked for.
 
-        defaults: Union[xyn_config.directory.DirectoryListing, Dict[str, Any], xyn_types.Default]
+        defaults: Union[xcon.directory.DirectoryListing, Dict[str, Any], xsentinels.Default]
             Side Note:
             If a default is not provided for "APP_ENV", a "dev" default will be added for it.
             You can set your own default either via `defaults['APP_ENV'] = 'whatever'` or you
@@ -374,7 +376,7 @@ class Config(Resource):
 
         # This property will lazily be used to create self.provider_chain when the chain
         # is requested for the first time.
-        self._providers = {x: None for x in loop(providers, iterate_dicts=True)}
+        self._providers = {x: None for x in xloop(providers)}
 
         # We lazy-lookup cacher if it's Default or a Type.
         # See 'self.cacher' property.
@@ -400,7 +402,7 @@ class Config(Resource):
             If set to Default, it  means we look to our [Parent Chain](#parent-chain) first,
             and if one of them don't have any set to then use sensible defaults.
 
-            Otherwise it's a list of `xyn_config.provider.Provider` types and/or Default.
+            Otherwise it's a list of `xcon.provider.Provider` types and/or Default.
         """
         return self._providers.keys()
 
@@ -411,7 +413,7 @@ class Config(Resource):
             If set to Default, it  means we look to our [Parent Chain](#parent-chain) first,
             and if one of them don't have any set to then use sensible defaults.
 
-            Otherwise it's a list of `xyn_config.directory.Directory` and/or Default.
+            Otherwise it's a list of `xcon.directory.Directory` and/or Default.
         """
         return self._directories.keys()
 
@@ -426,7 +428,7 @@ class Config(Resource):
         """
         # make an ordered-set out of this.
         dirs: OrderedDefaultSet = {}
-        for x in loop(value, iterate_dicts=True):
+        for x in xloop(value):
             if x is not Default:
                 x = Directory.from_path(x)
             dirs[x] = None
@@ -440,7 +442,7 @@ class Config(Resource):
             when you ask for the `Config.provider_chain`.
         """
         # make an ordered-set out of this.
-        self._providers = {x: None for x in loop(value)}
+        self._providers = {x: None for x in xloop(value)}
 
     def add_provider(self, provider: Type[Provider]):
         """ Adds a provider type to end of my provider type list [you can see what it is for
@@ -454,7 +456,7 @@ class Config(Resource):
         if provider in self._providers:
             return
 
-        # Add Provider type; using dict as an 'ordered set'; see xyn_types.OrderedSet.
+        # Add Provider type; using dict as an 'ordered set'; see xsentinels.OrderedSet.
         self._providers[provider] = None
 
     def add_directory(self, directory: Union[Directory, str, DefaultType]):
@@ -468,7 +470,7 @@ class Config(Resource):
         if directory in self._directories:
             return
 
-        # Add Directory; using dict as an 'ordered set'; see xyn_types.OrderedSet
+        # Add Directory; using dict as an 'ordered set'; see xsentinels.OrderedSet
         self._directories[directory] = None
 
     def add_export(self, *, service: str):
@@ -486,7 +488,7 @@ class Config(Resource):
 
         By default, the export list is just this:
 
-        ( `xyn_types.Default`, )
+        ( `xsentinels.Default`, )
 
         When you add more exports via `Config.add_export`, it will append to the end of this list.
         That way we still add whatever we need from parent and then an explicitly added to self.
@@ -514,17 +516,17 @@ class Config(Resource):
 
         This replaces all current services. By default, the export list is this:
 
-        ( `xyn_types.Default`, )
+        ( `xsentinels.Default`, )
 
         Which means, we ask the parent chain for an exports. If you set the exports without
         including this then the parent-chain won't be consulted.
 
         Args:
-            services (Iterable[Union[str, `xyn_types.Default`]]): List of exports you want
+            services (Iterable[Union[str, `xsentinels.Default`]]): List of exports you want
                 to add by service name. If you don't add the `Default` somewhere in this list
                 then we will NOT check the parent-chain
         """
-        self._exports = {x: None for x in loop(services, iterate_dicts=True)}
+        self._exports = {x: None for x in xloop(services)}
 
     def get_exports_by_service(self):
         """ List of services we current check their export's for. This only lists the exports
@@ -542,7 +544,7 @@ class Config(Resource):
         You can also set an override by setting a value for a config-name directly on `Config`
         via this syntax:
 
-        >>> from xyn_config.config import config
+        >>> from xcon.config import config
         >>> config.SOME_OVERRIDE_NAME = "my override value"
 
 
@@ -559,7 +561,7 @@ class Config(Resource):
 
         Args:
             name: Name of the item to remove, case-insensitive.
-            value (Union[Any, xyn_types.Default]): Can be any value. If Default is used
+            value (Union[Any, xsentinels.Default]): Can be any value. If Default is used
                 we will instead call `Config.remove_override(name)` for you to remove the value.
         """
         if value is Default:
@@ -586,9 +588,9 @@ class Config(Resource):
         - `config.set_override`
         -  `config.SOME_VAR = "a-value"`
 
-        The returned value is `xyn_types.Default` if no override is found;
+        The returned value is `xsentinels.Default` if no override is found;
         this is so you can distinguish between overriding to None or no override set at all
-        (`xyn_types.Default` evaluates to `False`, just like how `None` works).
+        (`xsentinels.Default` evaluates to `False`, just like how `None` works).
 
         .. warning:: Only returns a value if overrides was directly set on self!
 
@@ -603,10 +605,10 @@ class Config(Resource):
             name (str): Name to use to get override [case-insensitive].
 
         Returns:
-            Union[Any, xyn_types.Default]: The value, or `xyn_types.Default` if no value was
+            Union[Any, xsentinels.Default]: The value, or `xsentinels.Default` if no value was
                 set for `name`. This allows you to distinguish between overriding a value to
                 `None` and no override being set in the first place
-                (`xyn_types.Default` evaluates to `False`, just like how `None` works).
+                (`xsentinels.Default` evaluates to `False`, just like how `None` works).
         """
         item = self._override.get_item(name)
         if item:
@@ -635,8 +637,8 @@ class Config(Resource):
         You can remove overrides in various ways, such as:
 
         ```python
-        from xyn_config import config
-        from xyn_types import Default
+        from xcon import config
+        from xsentinels import Default
 
         # Alternate Method 1:
         config.SOME_NAME = Default
@@ -695,7 +697,7 @@ class Config(Resource):
         take a look at `config.SERVICE_NAME`. That will check the [Parent Chain](#parent-chain)
         if needed. You could also ask for the `Config.directory_chain` and see what the first
         Directory in the chain has for the service
-        `xyn_config.directory.Directory.service`.
+        `xcon.directory.Directory.service`.
         """
         item = self._override.get_item('service_name')
         if item:
@@ -739,7 +741,7 @@ class Config(Resource):
         take a look at `config.APP_ENV`. That will check the [Parent Chain](#parent-chain)
         if needed. You could also ask for the `Config.directory_chain` and see what the first
         Directory in the chain has for the environment
-        `xyn_config.directory.Directory.env`.
+        `xcon.directory.Directory.env`.
         """
         item = self._override.get_item('app_env')
         if item:
@@ -787,9 +789,9 @@ class Config(Resource):
     @property
     def provider_chain(self) -> ProviderChain:
         """
-        `xyn_config.provider.ProviderChain` we are currently using.
+        `xcon.provider.ProviderChain` we are currently using.
         This is effected by what was passed into Config when it was created.
-        If it was left as `xyn_types.Default`, we will get the value via the
+        If it was left as `xsentinels.Default`, we will get the value via the
         [Parent Chain](#parent-chain).
 
         See `Config` for more details.
@@ -803,9 +805,9 @@ class Config(Resource):
     @property
     def directory_chain(self) -> DirectoryChain:
         """
-        `xyn_config.directory.DirectoryChain` we are currently using.
+        `xcon.directory.DirectoryChain` we are currently using.
         This is effected by what was passed into Config when it was created.
-        If it was left as `xyn_types.Default`, we will get the value via the
+        If it was left as `xsentinels.Default`, we will get the value via the
         [Parent Chain](#parent-chain).
 
         See `Config` for more details.
@@ -816,7 +818,7 @@ class Config(Resource):
     def use_parent(self) -> bool:
         """
         If `True`: we will use the [Parent Chain](#parent-chain) when looking up things such as the
-        `Config.provider_chain`. as an example; if it was left as `xyn_types.Default`
+        `Config.provider_chain`. as an example; if it was left as `xsentinels.Default`
         when `Config` object was created.
 
         If `False`: the parent will not be consulted, and anything that was not set at creation
@@ -872,9 +874,9 @@ class Config(Resource):
             name (str): Name to use to get default [case-insensitive].
 
         Returns:
-            Union[Any, None, xyn_types.Default]: The value, or Default if no default
+            Union[Any, None, xsentinels.Default]: The value, or Default if no default
                 is set for name. This allows you to distinguish between defaulting a value to
-                None and no default being set in the first place (`xyn_types.Default`
+                None and no default being set in the first place (`xsentinels.Default`
                 looks like `False`, just like how `None` works).
         """
         item = self._defaults.get_item(name)
@@ -892,8 +894,8 @@ class Config(Resource):
         You can also call this other ways, such as:
 
         ```python
-        from xyn_config import config
-        from xyn_types import Default
+        from xcon import config
+        from xsentinels import Default
 
         # Alternate Method 1:
         config.set_default("SOME_NAME", Default)
@@ -913,7 +915,7 @@ class Config(Resource):
     ) -> Optional[str]:
         """
         Similar to dict.get(), provide name [case-insensitive] and we call `Config.get_item()`
-        and return the `xyn_config.directory.DirectoryItem.value` of the item returned,
+        and return the `xcon.directory.DirectoryItem.value` of the item returned,
         or passed in `default=None` if no item was found.
 
         See documentation for `Config.get_item()` for more details and to find out more
@@ -945,7 +947,7 @@ class Config(Resource):
                 for now.
         """
         if ignore_local_caches:
-            InternalLocalProviderCache.resource().reset_cache()
+            InternalLocalProviderCache.grab().reset_cache()
 
         item = self.get_item(name=name, skip_providers=skip_providers, skip_logging=skip_logging)
         if item:
@@ -991,10 +993,10 @@ class Config(Resource):
     ) -> Optional[DirectoryItem]:
         """
         Gets a DirectoryItem for name. If the value does not exist, we will still return a
-        `xyn_config.directory.DirectoryItem` with a
-        `xyn_config.directory.DirectoryItem.value` == `None`. This is because we cache the
+        `xcon.directory.DirectoryItem` with a
+        `xcon.directory.DirectoryItem.value` == `None`. This is because we cache the
         non-existence of items for performance reasons. This allows you to see
-        where the None value came from via the `xyn_config.directory.DirectoryItem.directory`
+        where the None value came from via the `xcon.directory.DirectoryItem.directory`
         attribute.
 
         Attributes:
@@ -1207,7 +1209,7 @@ class Config(Resource):
             # Lower-casing it because `EnvironmentalProvider` will do that for us when looking it
             # up (it looks it up in a case-insensitive manner).
             # Trying to make it a tiny bit more efficient since this is called a lot.
-            env_provider = EnvironmentalProvider.resource()
+            env_provider = EnvironmentalProvider.grab()
             if bool_value(env_provider.get_value_without_environ("config_disable_default_cacher")):
                 return None
             cacher = DynamoCacher
@@ -1223,14 +1225,14 @@ class Config(Resource):
                 f"Trying to get the cacher, but the type the user wants to use is not a "
                 f"DynamoCacher type: ({cacher})  In the future I may support other cacher "
                 f"types; but right now we only support either None, Default or "
-                f"xyn_config.providers.dynamo.DynamoCacher."
+                f"xcon.providers.dynamo.DynamoCacher."
             )
 
         # Grab the current cacher resource, it's a ProviderCacher type of some sort and
-        # so is a xyn_resource.resource.Resource
+        # so is a xinject.dependency.Dependency
         # (right now, cacher can only be a DynamoCacher type;
         # although we can change that in the future if we decide to change how caching works)
-        return cacher.resource()
+        return cacher.grab()
 
     def _get_item(
             self, name: str, *,
@@ -1385,13 +1387,13 @@ class Config(Resource):
             See [Parent Chain](#parent-chain).
 
             There is a concept of a parent-chain with Config if the Config object has
-            their `use_parent == True` [it defaults to True]. We use the current Context to
+            their `use_parent == True` [it defaults to True]. We use the current XContext to
             construct this parent-chain. See [parent-chain].
 
-            The parent-chain starts with the config resource in the current Context.
+            The parent-chain starts with the config resource in the current XContext.
             If that context has a parent context, we next grab the Config resource from
             that parent context and check it's `Config.use_parent`. If True we keep doing
-            this until we reach a Context without a parent or a `Config.use_parent` that is False.
+            this until we reach a XContext without a parent or a `Config.use_parent` that is False.
 
             We take out of the chain any config object that is myself. The only objects in
             the chain are other Config object instances.
@@ -1405,7 +1407,7 @@ class Config(Resource):
         skip_adding_more_parents = False
 
         chain = []
-        for config_resource in Context.current().resource_chain(Config, create=True):
+        for config_resource in XContext.grab().dependency_chain(Config, create=True):
             if config_resource is self:
                 found_self = True
                 if not use_parent:
@@ -1525,7 +1527,7 @@ class Config(Resource):
                 return item
             return item.value
 
-        item = EnvironmentalProvider.resource().get_item_without_environ(name)
+        item = EnvironmentalProvider.grab().get_item_without_environ(name)
         if not item or not item.value:
             item = DirectoryItem(
                 directory="/_default/hard-coded",
@@ -1561,7 +1563,7 @@ class Config(Resource):
 # for details on what this is and how to use it.
 #
 # noinspection PyRedeclaration
-config = ActiveResourceProxy.wrap(Config)
+config = Config.proxy()
 """
 This will be an alias for the current Config object. Every time you ask it for something,
 it looks up the current Config object and gets it from that. This means you can use this
@@ -1571,12 +1573,12 @@ object and use that to get the attribute/method you want.
 Example use case:
 
 ```python
-    from xyn_config import config
+    from xcon import config
     value = config.SOME_VAR
 ```
 """
 
-Config.resource()
+Config.grab()
 
 
 def _env_only_is_turned_on() -> bool:
@@ -1602,7 +1604,7 @@ def standard_directories(*, service: str, env: str) -> OrderedSet[Directory]:
     directory paths to check beyond the defaults, you can call this method and append them to
     a config object, like so:
 
-    >>> from xyn_config.config import config
+    >>> from xcon.config import config
     >>> for directory in standard_directories(service="customService", env="customEnv"):
     ...     config.add_directory(directory)
 
@@ -1680,11 +1682,11 @@ _BlankParentChain = _ParentChain()
 _std_directory_chain_cache: Dict[str, OrderedSet[Directory]] = dict()
 
 
-class ConfigRetriever(SettingsRetriever):
+class ConfigRetriever(SettingsRetrieverProtocol):
     """Retrieving the setting from config"""
-    def retrieve_value(self, field: SettingsField) -> Any:
+    def __call__(self, *, field: SettingsField, settings: 'Settings') -> Any:
         return config.get(field.name)
 
 
-class ConfigSettings(Settings, default_retriever=ConfigRetriever()):
+class ConfigSettings(Settings, default_retrievers=[ConfigRetriever()]):
     pass

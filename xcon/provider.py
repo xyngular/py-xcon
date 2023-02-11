@@ -9,28 +9,28 @@ from typing import Iterable, Optional, Mapping, Set, Type, Any, Callable, Dict
 from typing import Union
 
 from botocore.exceptions import BotoCoreError
-from xyn_logging.loggers import XynLogger
-from xyn_resource import Resource, Context
-from xyn_utils.loop import loop
+from xinject import Dependency, XContext
+from xloop import xloop
 
 from .directory import Directory, DirectoryOrPath, DirectoryItem, DirectoryChain, DirectoryListing
 
 import datetime as dt
+from logging import getLogger
 
-xlog = XynLogger(__name__)
+log = getLogger(__name__)
 
 
-class Provider(Resource, ABC):
+class Provider(Dependency, ABC):
     """
     Represents a Provider, which wraps a resource that can be used to store Config values based
     on a provided directory. It caches these directories so future lookups don't keep having to
-    fetch them from the Resource again in the future, while the process is still running.
+    fetch them from the Dependency again in the future, while the process is still running.
 
     Most of the time there is no need for a several of the same provider in the same process/app.
 
     The providers generally keep a cache of every directory they already looked up, so it's nice to
     share that cache with other Child context's by default via the
-    `xyn_resource.resource.Resource` mechanism.
+    `xinject.dependency.Dependency` mechanism.
 
     Config will use the current/active provider when it needs to consult a Provider for values.
 
@@ -42,25 +42,17 @@ class Provider(Resource, ABC):
     - boto clients/resources are also not thread-safe.
     - Sessions from requests library can't be used cross-thread.
 
-    For boto, if you use `xyn_aws` to grab the boto client/resource,
+    For boto, if you use `xboto` to grab the boto client/resource,
     it will allow you to lazily get a shared object that is guaranteed to only be shared
     for the current thread.
 
     This allows boto to reuse connections for things running on the same thread,
-    but xyn_aws will lazily create a new client if your on a seperate thread.
-
-    As for request sessions, we will eventually have something in the `xyn_requests` library,
-    but for now you'll have to do it your self.
-
-    You can look at `xyn_model_rest.session.Session`.
-    It's a resource that lets you get the 'current' requests session
-    (which allows re-use of TCP connections that are already connected,
-    but will also lazily return a session that can always be used on current thread).
+    but `xboto` will lazily create a new client if your on a separate thread.
     """
 
     name = "?"
     """ This is the value that will normally be set to the items
-        `xyn_config.directory.DirectoryItem.source`, also displayed
+        `xcon.directory.DirectoryItem.source`, also displayed
         when logging out the names of providers when something can't be found.
     """
 
@@ -85,7 +77,7 @@ class Provider(Resource, ABC):
     needs_directory = True
     """ By default, providers can't really use a `None` for a directory when calling `get_item()`.
         If you CAN work with a None directory then set this to False (for example
-        `xyn_config.providers.environmental.EnvironmentalProvider` uses this).
+        `xcon.providers.environmental.EnvironmentalProvider` uses this).
 
         A `None` normally means that we could not determine the proper directory to use.
         This can happen if no SERVICE_NAME and APP_ENV are defined. But some providers don't
@@ -125,7 +117,7 @@ class Provider(Resource, ABC):
                 cacher. But it's used by the other providers. This cacher acts just like
                 a provider and so accepts the parameter.
             directory_chain: Current directory chain that is being used to lookup value.
-            provider_chain (xyn_config.provider.ProviderChain): Current provider chain
+            provider_chain (xcon.provider.ProviderChain): Current provider chain
                 that is being used to lookup value.
             environ:
                 This is supposed to have the full service and environment name.
@@ -133,7 +125,7 @@ class Provider(Resource, ABC):
                 Example Directory Path: `/hubspot/testing`
 
         Returns:
-            xyn_config.directory.DirectoryItem: If we have the item, this is it.
+            xcon.directory.DirectoryItem: If we have the item, this is it.
             None: Otherwise we return None indicating we don't know about it.
         """
         raise NotImplementedError(f"Need to implement in ({self}).")
@@ -162,7 +154,7 @@ class Provider(Resource, ABC):
     ):
         # We could be called before application has configured it's logging;
         # ensure logging has been configured before we log out.
-        # Otherwise log message may never get logged out
+        # Other-wise log message may never get logged out
         # (Python defaults to Warning log level).
 
         # Use cache_range_key if it exists, otherwise use name.
@@ -171,9 +163,9 @@ class Provider(Resource, ABC):
         provider_class = self.__class__.__name__
         thread_name = threading.current_thread().name
 
-        xlog.info(
-            "{msg_prefix} values via provider ({provider}/{provider_class}) "
-            "for path ({path}), for thread ({thread_name}), for names ({names}).",
+        log.info(
+            f"{msg_prefix} values via provider ({self.name}/{provider_class}) "
+            f"for path ({path}), for thread ({thread_name}), for names ({names}).",
             extra=dict(
                 msg_prefix=msg_prefix,
                 provider=self.name,
@@ -230,7 +222,7 @@ class AwsProvider(Provider, ABC):
 
     @property
     def local_cache(self) -> Dict[Directory, DirectoryListing]:
-        cacher = InternalLocalProviderCache.resource()
+        cacher = InternalLocalProviderCache.grab()
         return cacher.get_cache_for_provider(provider=self, cache_constructor=lambda c: dict())
 
 
@@ -276,7 +268,7 @@ class ProviderChain:
         Starting with the first provider in my list has `Provider.query_before_cache_if_possible`
         set to False (default) we will consider them cachable.
 
-        Normally, the `xyn_config.providers.environmental.EnvironmentalProvider` provider
+        Normally, the `xcon.providers.environmental.EnvironmentalProvider` provider
         is the only non-cacheable provider, and normally it's listed first.
 
         This means that we will normally not cache values from this EnvironmentalProvider.
@@ -306,13 +298,13 @@ class ProviderChain:
 
     def __post_init__(self):
         providers = list()
-        context = Context.current()
+        context = XContext.grab()
         provider_key_names = []
         query_before_finished = False
-        for p in loop(self.providers, iterate_dicts=True):
+        for p in xloop(self.providers):
             # Check to see if any of them are classes [and type's resources needs to be grabbed].
             if isclass(p):
-                p = context.resource(p)
+                p = context.dependency(p)
             providers.append(p)
 
             if not query_before_finished:
@@ -470,7 +462,7 @@ class ProviderChain:
         return final_map
 
 
-class InternalLocalProviderCache(Resource):
+class InternalLocalProviderCache(Dependency):
     """
     Used by the providers for a place to store/cache things they retrieve from the systems
     they provide configuration values from.
@@ -506,7 +498,7 @@ class InternalLocalProviderCache(Resource):
     The providers do this every time they are asked for a value.
 
     In addition to changing this directly
-    (via `InternalLocalProviderCache.resource().expire_time_delta` = ...)
+    (via `InternalLocalProviderCache.grab().expire_time_delta` = ...)
     you can also override this via an environmental variable:
 
     `CONFIG_INTERNAL_CACHE_EXPIRATION_MINUTES`
