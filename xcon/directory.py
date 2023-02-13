@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import string
 import weakref
 from dataclasses import dataclass, field
 from types import MappingProxyType
@@ -93,6 +94,32 @@ class Directory:
         /hubspot/export/testing/HUBSPOT_SOME_QUEUE_NAME
     """
 
+    is_path_format: bool = field(init=True, default=None, compare=True)
+    """
+    If `None` (default): WIll auto-discover if the path is formatted or not and set
+    `is_path_format` to True or False depending on what is discovered
+    (see if `True` / `False` below for details).
+
+    If `True` (default): Will look for formatting directives, the only two used/looked-for are
+    `service` and `environment`.
+
+    You can use them just like you would a normal `f` string; example:
+
+    `"/{service}/{environment}"`
+
+    Don't end the path in a slash.
+
+    When the directory path is resolved while `xcon.config.Config` is lookup up a config value,
+    it will format the path for you with the two variables provided.
+
+    You don't have to include both variables, you may only want one in a particular directory
+    path (ie: `"/{service}"`); they will simply be available for use as needed to format the
+    path. 
+
+    If `False`: Won't look for formatting directives when resolving path,
+    will use the path `as-is`.
+    """
+
     def __post_init__(self):
         if self.path:
             assert not self.env, "Can't provide a env + path simultaneously to Directory."
@@ -118,9 +145,16 @@ class Directory:
 
         if not self.is_export:
             env = self.env
-            # If we hav export in the start of environment name, we override is_export to True.
+            # If we have export in the start of environment name, we override is_export to True.
             if env and (env.startswith("export") or env.startswith("/export")):
                 object.__setattr__(self, "is_export", True)
+
+        if self.is_path_format is None:
+            is_format = bool([t[1] for t in string.Formatter().parse(path) if t[1] is not None])
+            object.__setattr__(self, "is_path_format", is_format)
+
+        # init the resolve-cache with dict if we are a format-path:
+        object.__setattr__(self, "_resolve_cache", dict() if self.is_path_format else None)
 
         # Only cache it if it's not already present, we want to try to use a standard
         # Directory object for a particular path as much as possible.
@@ -196,6 +230,29 @@ class Directory:
         # elements[0] should be a blank string [it's the part before the first `/`].
         components = _service_env_from_path(path=path)
         return Directory(service=components[0], env=components[1])
+
+    _resolve_cache = None
+    """
+    Used to cache `resolved` directory results based onfinal formatted service/environment values.
+    """
+
+    def resolve(self, service: str, environment: str) -> Directory:
+        if not self.is_path_format:
+            return self
+
+        if resolved_environs := self._resolve_cache.get(service):
+            if resolved := resolved_environs.get(environment):
+                return resolved
+
+        unformatted = self.path
+        formatted = unformatted.format_map({'service': service, 'environment': environment})
+        if formatted == unformatted:
+            self._resolve_cache.setdefault(service, {})[environment] = self
+            return self
+
+        resolved = Directory(path=formatted, is_path_format=False)
+        self._resolve_cache.setdefault(service, {})[environment] = resolved
+        return resolved
 
 
 def _service_env_from_path(path: str) -> Tuple[Optional[str], Optional[str]]:

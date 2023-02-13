@@ -1104,6 +1104,10 @@ class Config(Dependency):
             for x in exported:
                 directories[Directory(service=x, env=environment, is_export=True)] = None
 
+        directories = {
+            k.resolve(service=service, environment=environment): None for k in directories
+        }
+
         return directories
 
     def _resolve_attr_values_with_cursor(
