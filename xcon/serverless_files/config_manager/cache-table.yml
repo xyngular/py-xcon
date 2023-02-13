@@ -1,0 +1,42 @@
+# Notes:
+#
+# You can include this file under the `resources:` section of your serverless file.
+#
+# This creates a table.
+#
+# You could also copy this into your project instead of directly referencing
+# this file if you wanted to adjust the table parameters to your liking. I guarantee the table
+# hash/range/ttl names will not change and so you should never have to recreate/change the table
+# in the future.
+#
+# The table hash-key is the app/service + stage name (ie: `/${self:service}/${self:provider.stage}`),
+# This is what allows the permissions to be enforced so apps/services can't see other app/service config values.
+#
+# The range-key includes the config-value name, along with other information on which providers and directory-paths
+# were used to originally look up the config-value, that way the cache will accurately reflect config values no
+# mater how they were looked up dynamically at run-time.
+#
+# For the table name, for looks for param `xconConfigCacheTableName`, if not found then uses `account-all-configCache`,
+# ('account-all', as in aws account-wide config cache table, for all stages/environments)
+
+Resources:
+  xconConfigCacheTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${param:xconConfigCacheTableName, 'account-all-configCache'}
+      AttributeDefinitions:
+        - AttributeName: app_key
+          AttributeType: S
+        - AttributeName: name_key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: app_key
+          KeyType: HASH
+        - AttributeName: name_key
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: True
+      SSESpecification:
+        SSEEnabled: True

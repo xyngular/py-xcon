@@ -1,0 +1,32 @@
+Resources:
+  configCacheTableAllAccessRole:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: ${self:service}-${self:provider.stage}-configCacheTableAllAccessRole
+      Roles:
+        - !Ref IamRoleLambdaExecution
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "dynamodb:DescribeTable"
+              - "dynamodb:GetItem"
+              - "dynamodb:Query"
+              - "dynamodb:ConditionCheck"
+              - "dynamodb:PutItem"
+              - "dynamodb:BatchGetItem"
+              - "dynamodb:BatchWriteItem"
+              - "dynamodb:DeleteItem"
+              - "dynamodb:Scan"
+              - "dynamodb:UpdateItem"
+              - "dynamodb:UpdateTimeToLive"
+              - "dynamodb:Scan"
+              - "dynamodb:ConditionCheckItem"
+            Resource:
+              - Fn::Join:
+                  - ":"
+                  - - "arn:aws:dynamodb"
+                    - Ref: "AWS::Region"
+                    - Ref: "AWS::AccountId"
+                    - "table/${param:xconConfigCacheTableName, 'account-all-configCache'}"

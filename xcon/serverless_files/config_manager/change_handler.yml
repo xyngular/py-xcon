@@ -1,0 +1,28 @@
+xconConfigChangeHandler:
+  handler: xcon/serverless_resources/change_handler.ssm_or_secrets_change_event
+  events:
+    - cloudwatchEvent:
+        event:
+          source:
+            - aws.ssm
+          detail-type:
+            - Parameter Store Change
+          detail:
+            operation:
+              - Create
+              - Update
+              - Delete
+    - cloudwatchEvent:
+        event:
+          source:
+            - aws.secretsmanager
+          detail-type:
+            - AWS API Call via CloudTrail
+          detail:
+            eventSource:
+              - secretsmanager.amazonaws.com
+            eventName:
+              - CreateSecret
+              - UpdateSecret
+              - DeleteSecret
+              - PutSecretValue
