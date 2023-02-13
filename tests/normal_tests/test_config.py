@@ -545,21 +545,28 @@ def test_cache_uses_env_vars_by_default(directory: Directory):
         Type="String",
     )
 
-    # We should currently have no values for these in env-vars:
-    assert os.environ.get('SERVICE_NAME') is None
-    assert os.environ.get('APP_ENV') is None
-
-    # Ensure we are working like we expect, unit-test-conf overridden service/environment on
-    # Config objects and since there are no env-vars, it will use the ones one Config.
-    assert config.get('exp_test_value_3') == 'expiringTestValue3'
-    table = _ConfigDynamoTable(table_name='global-configCache', cache_table=True)
-    items = list(table.get_all_items())
-
-    # See if what we stored in the cache table is what we expect.
-    assert len(items) == 1
-    assert items[0].cache_hash_key == f'/{config.SERVICE_NAME}/{config.APP_ENV}'
-
+    service_org = os.environ.get('SERVICE_NAME')
+    env_org = os.environ.get('APP_ENV')
     try:
+        if service_org is not None:
+            del os.environ['SERVICE_NAME']
+        if env_org is not None:
+            del os.environ['APP_ENV']
+
+        # We should currently have no values for these in env-vars:
+        assert os.environ.get('SERVICE_NAME') is None
+        assert os.environ.get('APP_ENV') is None
+
+        # Ensure we are working like we expect, unit-test-conf overridden service/environment on
+        # Config objects and since there are no env-vars, it will use the ones one Config.
+        assert config.get('exp_test_value_3') == 'expiringTestValue3'
+        table = _ConfigDynamoTable(table_name='global-configCache', cache_table=True)
+        items = list(table.get_all_items())
+
+        # See if what we stored in the cache table is what we expect.
+        assert len(items) == 1
+        assert items[0].cache_hash_key == f'/{config.SERVICE_NAME}/{config.APP_ENV}'
+
         # Now, set the environmental-vars and see if cacher will use these over the ones
         # overridden on Config object:
         os.environ['SERVICE_NAME'] = 'testserv'
@@ -578,8 +585,15 @@ def test_cache_uses_env_vars_by_default(directory: Directory):
         expected_hash_keys = {f'/{config.SERVICE_NAME}/{config.APP_ENV}', '/testserv/testenv'}
         assert hash_keys_in_table == expected_hash_keys
     finally:
-        os.environ.pop('SERVICE_NAME')
-        os.environ.pop('APP_ENV')
+        if service_org is not None:
+            os.environ['SERVICE_NAME'] = service_org
+        else:
+            os.environ.pop('SERVICE_NAME')
+
+        if env_org is not None:
+            os.environ['APP_ENV'] = env_org
+        else:
+            os.environ.pop('APP_ENV')
 
 
 @Config(providers=DEFAULT_TESTING_PROVIDERS, cacher=DynamoCacher)
