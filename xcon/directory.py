@@ -53,16 +53,6 @@ class Directory:
     If no 'env' is provided, we won't include it in the directory/path.
     """
 
-    service: str = field(compare=False, default=Default)
-    """ Service part of the directory path. By Default, if no service or path is passed in
-        this is set to `global`.
-    """
-
-    env: Optional[str] = field(compare=False, default=None)
-    """ Environmental part of the directory path, ie: `/some_service/{env}`. If this is None
-        (the default) we don't have the environment name in the resulting directory path.
-    """
-
     # Both Prepopulated in __post_init__(...):
     #   We also use this for compare since it's a single obj and uniquely identifies the directory.
     path: str = field(init=True, default=None, compare=True)
@@ -82,6 +72,16 @@ class Directory:
         **Exception Raised**
     """
 
+    service: str = field(compare=False, default=Default)
+    """ Service part of the directory path. By Default, if no service or path is passed in
+        this is set to `global`.
+    """
+
+    env: Optional[str] = field(compare=False, default=None)
+    """ Environmental part of the directory path, ie: `/some_service/{env}`. If this is None
+        (the default) we don't have the environment name in the resulting directory path.
+    """
+
     is_non_existent: bool = field(init=False, default=False, compare=False)
     """ If this directory is the special non-existent directory we use to for non-existent values,
         this will be True.
@@ -94,7 +94,9 @@ class Directory:
         /hubspot/export/testing/HUBSPOT_SOME_QUEUE_NAME
     """
 
-    is_path_format: bool = field(init=True, default=None, compare=True)
+    # Setting `hash` to False, because it's very, very unlikely a formatted and unformatted
+    # Directory object would ever be in the same set/ordered-set/dict (ie: optimization).
+    is_path_format: bool = field(init=True, default=None, compare=True, hash=False)
     """
     If `None` (default): WIll auto-discover if the path is formatted or not and set
     `is_path_format` to True or False depending on what is discovered
@@ -114,7 +116,7 @@ class Directory:
 
     You don't have to include both variables, you may only want one in a particular directory
     path (ie: `"/{service}"`); they will simply be available for use as needed to format the
-    path. 
+    path.
 
     If `False`: Won't look for formatting directives when resolving path,
     will use the path `as-is`.
@@ -149,9 +151,16 @@ class Directory:
             if env and (env.startswith("export") or env.startswith("/export")):
                 object.__setattr__(self, "is_export", True)
 
-        if self.is_path_format is None:
-            is_format = bool([t[1] for t in string.Formatter().parse(path) if t[1] is not None])
-            object.__setattr__(self, "is_path_format", is_format)
+        is_path_format = self.is_path_format
+        if is_path_format is None or is_path_format:
+            format_keys = {t[1] for t in string.Formatter().parse(path) if t[1] is not None}
+            unknown_keys = format_keys - {'service', 'environment'}
+            if unknown_keys:
+                raise ConfigError(
+                    f"Using unknown format keys ({unknown_keys}) for directory path ({path})."
+                )
+
+            object.__setattr__(self, "is_path_format", bool(format_keys))
 
         # init the resolve-cache with dict if we are a format-path:
         object.__setattr__(self, "_resolve_cache", dict() if self.is_path_format else None)

@@ -185,8 +185,11 @@ class Config(Dependency):
         ---------
         directories: Union[Iterable[xcon.directory.DirectoryOrPath], xsentinels.Default]
             List of directories/paths to search when querying for a name.
+            
             If `xsentinels.Default`: Uses the first one from [Parent Chain](#parent-chain).
-            If everyone in the parent chain is set to `Default`, uses `standard_directories()`.
+            
+            If everyone in the parent chain is set to `Default`,
+            uses `xcon.conf.Settings.directories`.
 
             Various ways to change what directories to use:
 
@@ -1097,9 +1100,12 @@ class Config(Dependency):
             defaults_factory=tuple  # Fast, empty iterable
         )
 
+        if service is Default:
+            service = self._service_with_cursor(cursor=cursor)
+        if environment is Default:
+            environment = self._environment_with_cursor(cursor=cursor)
+
         if exported:
-            if not environment:
-                environment = self._environment_with_cursor(cursor=cursor)
             # Any new values will be added to end, nothing will happen to order of existing ones.
             for x in exported:
                 directories[Directory(service=x, env=environment, is_export=True)] = None
@@ -1453,7 +1459,6 @@ class Config(Dependency):
             environment=environment
         )
 
-        # Return a blank directory chain, they gave us a 'blank' list of directories.
         return DirectoryChain(directories=directories)
 
     def _standard_directories(
@@ -1466,7 +1471,12 @@ class Config(Dependency):
             service = self._service_with_cursor(cursor=cursor)
         if environment is Default:
             environment = self._environment_with_cursor(cursor=cursor)
-        return standard_directories(service=service, env=environment)
+
+        from xcon import settings
+        return {
+            d.resolve(service=service, environment=environment): None
+            for d in xloop(settings.directories)
+        }
 
     def _service_with_cursor(
             self,
@@ -1586,15 +1596,13 @@ Config.grab()
 
 
 def _env_only_is_turned_on() -> bool:
-    # Could have used `get_value_without_environ("config_env_only")` on EnvironmentalProvider,
-    # (like I did with `config_disable_default_cacher`) but decided to just check environ directly
-    # each time, for this exact case.  It could be something a developer would enable after
-    # the EnvironmentalProvider takes a snapshot and expect to still work...
-    # Just keeping it simple.
-    return bool_value(os.environ.get('CONFIG_ENV_ONLY', False))
+    # Check settings to see if env-only is  turned on.
+    from xcon.conf import settings
+    return settings.env_only_provider
 
 
-def standard_directories(*, service: str, env: str) -> OrderedSet[Directory]:
+# todo: remove this function, unused now.
+def _replace_standard_directories(*, service: str, env: str) -> OrderedSet[Directory]:
     """
     Gives you the standard list of directories for service/env combination.
     This is called when creating a `Config.__init__` if no `directories` are passed into any
@@ -1622,18 +1630,23 @@ def standard_directories(*, service: str, env: str) -> OrderedSet[Directory]:
     For more details and context surounding what is returned, see
     [Standard Directory Paths](#standard-directory-paths). Below is a summary.
 
-    Right now we return these directories, in priority order:
+    As a side-note: you can change the default directories via `xcon.conf.Settings.directories`,
+    so if that changes then what this returns will also change.
+
+    Right now we return these directories by default, in priority order:
 
     1. `/{service}/{env}`
-    2. `/{service}`
+    2. `/{service}/all`
     3. `/global/{env}`
-    4. `/global`
+    4. `/global/all`
 
     If service == 'global' or None or blank, we will use `global` and only provide the two
     global directories and leave the {service} ones out of it:
 
     1. `/global/{env}`
-    2. `/global`
+    2. `/global/all`
+
+    If there is no `env` avaliable, `env` will just only use `../all`
 
     Parameters
     -----------
@@ -1649,19 +1662,13 @@ def standard_directories(*, service: str, env: str) -> OrderedSet[Directory]:
 
         You can grab the current environment being used via `Config.APP_ENV`.
 
-        If None/Blank, we will use `dev`.
+        If None/Blank, we will use `all`.
     """
     if not service:
         service = 'global'
 
     if not env:
-        env = 'dev'
-
-    cache = _std_directory_chain_cache
-    cache_key = f"{service} : {env}"
-    directory_chain = cache.get(f"{service} : {env}")
-    if directory_chain:
-        return directory_chain
+        env = 'all'
 
     directories: OrderedSet[Directory] = {}
     if service == 'global':
@@ -1678,12 +1685,10 @@ def standard_directories(*, service: str, env: str) -> OrderedSet[Directory]:
     # When no service is provided, it uses the 'global' service by default for directory.
     directories[Directory(env=env)] = None
     directories[Directory()] = None
-    cache[cache_key] = directories
     return directories
 
 
 _BlankParentChain = _ParentChain()
-_std_directory_chain_cache: Dict[str, OrderedSet[Directory]] = dict()
 
 
 class ConfigRetriever(SettingsRetrieverProtocol):

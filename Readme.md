@@ -15,7 +15,7 @@ Table Of Contents:
 
 - [How To Use](#how-to-use)
 - [Special Environmental Variables](#special-environmental-variables)
-    * [CONFIG_ENV_ONLY](#config_env_only)
+    * [XCONF_ENV_ONLY_PROVIDER](#config_env_only)
     * [CONFIG_DISABLE_DEFAULT_CACHER](#config_disable_default_cacher)
     * [APP_ENV / SERVICE_NAME](#app_env--service_name)
 - [Why Use](#why-use)
@@ -67,7 +67,7 @@ while using config in an ongoing basis.
 If you know nothing and want the basics, go to [Why Use](#why-use)
 
 
-## CONFIG_ENV_ONLY
+## XCONF_ENV_ONLY_PROVIDER
 
 If 'true', by default Config will only use env-variables.
 
@@ -989,7 +989,7 @@ First, let's talk about how to disable caching via environmental variables:
     caching will still be used regardless.
     - Using this option disables the cacher without having to also disable the providers,
     this means it will still lookup params from SSM and so on, just not use the cached version.
-- `CONFIG_ENV_ONLY`, if 'true':
+- `XCONF_ENV_ONLY_PROVIDER`, if 'true':
     - Regardless of how Config is modified/configured via code, these effects will still happen:
         - The cache will be disabled.
         - The only provider that will be used is the EnvironmentalProvider.
@@ -1049,17 +1049,17 @@ def some_method():
 
 ### Disable Cache + Non-Environmental Providers
 
-If you set `CONFIG_ENV_ONLY` as an actual environmental variable, it will disable
+If you set `XCONF_ENV_ONLY_PROVIDER` as an actual environmental variable, it will disable
 all providers and the cache too.  It needs to be in `os.environ`, so a real environmental variable.
 
-- CONFIG_ENV_ONLY: If 'true', by default Config will only use env-variables.
-    - If something has specifically set providers, the won't be used while CONFIG_ENV_ONLY is on.
-    - Cache is also explicitly disabled when CONFIG_ENV_ONLY is on, no mater how Config is setup.
+- XCONF_ENV_ONLY_PROVIDER: If 'true', by default Config will only use env-variables.
+    - If something has specifically set providers, the won't be used while XCONF_ENV_ONLY_PROVIDER is on.
+    - Cache is also explicitly disabled when XCONF_ENV_ONLY_PROVIDER is on, no mater how Config is setup.
   
 As a developer, it's nice sometimes to just 'disable' Config, where it only looks at
 environmental variables (along any normal overrides/defaults set into it, as it normally would).
 
-The objective with this CONFIG_ENV_ONLY is to disable external lookup of any configuration
+The objective with this XCONF_ENV_ONLY_PROVIDER is to disable external lookup of any configuration
 variables.  Only rely on what is inside the code/process.
 
 This can help with debugging, to see if a problem is due to a coding issue or if it's

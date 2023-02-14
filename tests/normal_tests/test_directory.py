@@ -1,4 +1,7 @@
+import pytest
+
 from xcon.directory import Directory
+from xcon.exceptions import ConfigError
 
 
 def test_normal_directory_is_not_formatted():
@@ -44,3 +47,9 @@ def test_directory_hash_in_set():
     dir_set = {formatted_dir, resolved_dir, nonformatted_dir}
     assert len(dir_set) == 3
 
+
+def test_directory_checks_format_keys():
+    # Check to see we raise an error if unknown format key is used.
+    # Also check to see if exception message contains some reasonable information in it.
+    with pytest.raises(ConfigError, match=r'unknown format.+unknown_format_key.+/some-more-path'):
+        Directory(path='/{unknown_format_key}/some-more-path')

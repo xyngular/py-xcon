@@ -48,3 +48,7 @@ from .config import Config
 from . import providers
 from .config import config
 from .config import ConfigSettings
+from .conf import settings
+
+
+__version__ = '0.1.0'

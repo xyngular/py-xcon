@@ -62,8 +62,8 @@ def test_env_only_env_var():
     assert type(config.resolved_cacher) == DynamoCacher
 
     try:
-        # Next, set CONFIG_ENV_ONLY and check conditions.
-        os.environ['CONFIG_ENV_ONLY'] = 'true'
+        # Next, set XCONF_ENV_ONLY_PROVIDER and check conditions.
+        os.environ['XCONF_ENV_ONLY_PROVIDER'] = 'true'
 
         # When using default providers, `EnvironmentalProvider` should be only one
         config.providers = [Default]
@@ -74,10 +74,10 @@ def test_env_only_env_var():
         assert_only_provider_used(EnvironmentalProvider)
 
         # Config still remembers the providers it's configured with,
-        # even if it does not use them with CONFIG_ENV_ONLY is enabled.
+        # even if it does not use them with XCONF_ENV_ONLY_PROVIDER is enabled.
         assert list(config.providers) == [SecretsManagerProvider]
     finally:
-        del os.environ['CONFIG_ENV_ONLY']
+        del os.environ['XCONF_ENV_ONLY_PROVIDER']
 
     # After environmental variable deleted, check to see if Config goes back to normal.
     assert_only_provider_used(SecretsManagerProvider)
@@ -588,12 +588,12 @@ def test_cache_uses_env_vars_by_default(directory: Directory):
         if service_org is not None:
             os.environ['SERVICE_NAME'] = service_org
         else:
-            os.environ.pop('SERVICE_NAME')
+            os.environ.pop('SERVICE_NAME', None)
 
         if env_org is not None:
             os.environ['APP_ENV'] = env_org
         else:
-            os.environ.pop('APP_ENV')
+            os.environ.pop('APP_ENV', None)
 
 
 @Config(providers=DEFAULT_TESTING_PROVIDERS, cacher=DynamoCacher)
