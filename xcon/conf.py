@@ -1,14 +1,9 @@
-from xsentinels.default import DefaultType, Default
 from xsettings import Settings as _Settings, SettingsField
-from typing import (
-    Dict, Union, Iterable, Type, Any, Optional, List, Sequence
-)
-from .directory import DirectoryListing, DirectoryOrPath, Directory
+from typing import Type, Optional, Sequence
+from .directory import DirectoryListing, Directory
 from . import providers
 from .provider import Provider
-from .providers import DynamoCacher
 from xsettings.env_settings import EnvVarRetriever
-import os
 
 
 _env_retriever = EnvVarRetriever()
@@ -21,15 +16,15 @@ class Settings(_Settings):
         #  empty-objs and so on; on a per-instance basis.
         self.defaults = DirectoryListing()
 
-    service: Optional[str] = SettingsField(
-        name='APP_NAME', retriever=_env_retriever
+    service: str = SettingsField(
+        name='APP_NAME', retriever=_env_retriever, default_value='global'
     )
-    """ Defaults to `APP_NAME` environment variable. """
+    """ Defaults to `APP_NAME` environment variable; otherwise will fallback to using 'global'. """
 
-    environment: Optional[str] = SettingsField(
-        name='APP_ENV', retriever=_env_retriever
+    environment: str = SettingsField(
+        name='APP_ENV', retriever=_env_retriever, default_value='all'
     )
-    """ Defaults to `APP_ENV` environment variable. """
+    """ Defaults to `APP_ENV` environment variable; otherwise will fallback to using 'all'. """
 
     disable_default_cacher: bool = SettingsField(
         name='XCON_DISABLE_DEFAULT_CACHER', retriever=_env_retriever, default_value=False
@@ -72,6 +67,7 @@ class Settings(_Settings):
     (which by default will use `APP_ENV` environmental variable).
     """
 
+    # todo: rename without provider or somehwo indicate cacher is not used too?
     env_only_provider: bool = SettingsField(
         name='XCONF_ENV_ONLY_PROVIDER',
         retriever=_env_retriever,

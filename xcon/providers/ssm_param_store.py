@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, Optional, Mapping
+from typing import Optional, Mapping
 
 from xboto import boto_clients
 

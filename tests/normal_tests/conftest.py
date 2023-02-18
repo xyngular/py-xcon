@@ -4,12 +4,13 @@ import moto
 import pytest
 from xcon import config
 from xboto.resource import dynamodb
+from xcon.conf import settings
 
-# have a semi-really looking environmental variable to test with.
-os.environ["DJANGO_SETTINGS_MODULE"] = "somemodule.some_app.settings.tests"
 
-service_name_at_import_time = str(config.SERVICE_NAME)
-app_env_at_import_time = str(config.APP_ENV)
+service_name_at_import_time = os.environ['APP_NAME']
+app_env_at_import_time = os.environ['APP_ENV']
+
+os.environ['SOME_ENV_VAR'] = 'hello'
 
 
 def test_ensure_config_is_at_baseline_at_module_import_time():
@@ -25,7 +26,7 @@ def directory():
         an isolated XContext for you as well.
     """
     from xcon.directory import Directory
-    return Directory(service=config.SERVICE_NAME, env=config.APP_ENV)
+    return Directory(service=settings.service, env=settings.environment)
 
 
 @pytest.fixture(autouse=True)

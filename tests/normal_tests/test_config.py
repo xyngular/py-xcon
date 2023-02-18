@@ -3,6 +3,7 @@ import functools
 import os
 import time
 from typing import Type
+from xcon.conf import settings
 
 from xcon.providers.common import AwsProvider
 
@@ -20,7 +21,7 @@ from xcon.providers import (
     DynamoProvider,
     SsmParamStoreProvider,
     SecretsManagerProvider,
-    DynamoCacher, default_provider_types,
+    DynamoCacher
 )
 from xcon.providers.dynamo import _ConfigDynamoTable
 
@@ -90,13 +91,13 @@ def test_env_provider():
     # The rest of the unit tests configure an environmental provider.
     # Ensure the environmental provider works with a real environmental variable.
     # This env-var is configured via `tests/conftest.py`.
-    item = config.get_item("django_settings_module")
+    item = config.get_item("SOME_ENV_VAR")
 
     # Ensure we got it from environmental provider.
     assert item.source == 'env'
 
     # Ensure we got correct value.
-    assert item.value == 'somemodule.some_app.settings.tests'
+    assert item.value == 'hello'
 
     # Ensure we don't got some non-existent value...
     assert config.get_value("some_other_non_existant_env_var") is None
@@ -132,28 +133,28 @@ def test_config_disable_via_env_var():
 @moto.mock_secretsmanager
 @config_with_env_dyn_ssm_secrets_providers
 def test_direct_class_access(directory: Directory):
-    config.TEST_NAME = "myTestValue"
+    config['TEST_NAME'] = "myTestValue"
     # When you access a config var via the default config, it should lookup the current
     # default config automatically [via current XContext] and use that to get the var.
-    assert config.TEST_NAME == 'myTestValue'
+    assert config['TEST_NAME'] == 'myTestValue'
 
 
 @config_with_env_dyn_ssm_secrets_providers
 def test_basic_configs(directory: Directory):
     # Basic defaults-test.
     config.set_default('TEST_NAME', 'myTestDefaultValue')
-    value = config.TEST_NAME
+    value = config['TEST_NAME']
     assert value == 'myTestDefaultValue'
-    config.TEST_NAME = "myTestValue"
-    assert config.TEST_NAME == 'myTestValue'
+    config['TEST_NAME'] = "myTestValue"
+    assert config['test_name'] == 'myTestValue'
 
 
 @config_with_env_dyn_ssm_secrets_providers
 def test_config_for_unconfiged_param(directory: Directory):
     # Basic defaults-test.
     config.set_default('TEST_NAME', 'myTestDefaultValue')
-    assert config.TEST_NAME == 'myTestDefaultValue'
-    assert config.TEST_NAME_OTHER is None
+    assert config['TEST_NAME'] == 'myTestDefaultValue'
+    assert config['TEST_NAME_OTHER'] is None
 
 
 @config_with_env_dyn_ssm_secrets_providers
@@ -167,12 +168,12 @@ def test_direct_parent_behavior(directory: Directory):
     assert child.cacher is Default
     assert config.cacher is Default
     assert child.provider_chain.providers == config.provider_chain.providers
-    assert child.A_DEFAULT == 'parent-default'
+    assert child['A_DEFAULT'] == 'parent-default'
 
     child = Config(cacher=None)
     assert child.directories == config.directories
     assert child.cacher is None
-    assert child.A_DEFAULT == 'parent-default'
+    assert child['A_DEFAULT'] == 'parent-default'
 
     # Remove the cacher provider, see if the others are still the same.
     config_providers = [
@@ -187,9 +188,9 @@ def test_direct_parent_behavior(directory: Directory):
     ) == [Directory.from_path("/hello/another")]
 
     assert child.cacher is Default
-    assert child.A_DEFAULT == 'parent-default'
-    child.A_DEFAULT = 'child-override'
-    assert child.A_DEFAULT == 'child-override'
+    assert child['A_DEFAULT'] == 'parent-default'
+    child['A_DEFAULT'] = 'child-override'
+    assert child['A_DEFAULT'] == 'child-override'
 
     # Replace cacher in parent provider list with child cacher, since the directory is
     # different, child should construct a new cacher.
@@ -220,7 +221,7 @@ def test_env_are_higher_priority_than_cacher(directory: Directory):
     )
 
     # Grab the existing values from the providers, make sure we see it [also caches it in cacher].
-    assert config.TEST_CACHER_NOT_USED == 'wrongValue'
+    assert config['TEST_CACHER_NOT_USED'] == 'wrongValue'
 
     # Override EnvironmentalProvider with a specific environmental-variable.
     with EnvironmentalProvider(env_vars={'TEST_CACHER_NOT_USED': 'rightValue'}):
@@ -233,13 +234,13 @@ def test_env_are_higher_priority_than_cacher(directory: Directory):
                 directory=directory,
                 directory_chain=config.directory_chain,
                 provider_chain=config.provider_chain,
-                environ=Directory(service=config.SERVICE_NAME, env=config.APP_ENV),
+                environ=Directory(service=settings.service, env=settings.environment),
             )
             == 'wrongValue'
         )
 
         # Make sure the environmental variable is now taking priority over cacher.
-        assert config.TEST_CACHER_NOT_USED == "rightValue"
+        assert config['TEST_CACHER_NOT_USED'] == "rightValue"
 
 
 @config_with_env_dyn_ssm_secrets_providers
@@ -253,7 +254,7 @@ def test_basic_config(directory: Directory):
     assert v['Parameter']['Value'] == 'testValue2'
 
     # See if our config object can lookup the test-data in ssm automatically.
-    v2 = config.TEST_NAME
+    v2 = config.get('TEST_NAME')
     assert v2 == 'testValue2'
 
 
@@ -287,8 +288,8 @@ def test_ssm_and_dynamo(directory: Directory, expected_values):
     )
     table.put_item(item)
 
-    # See if our config object can lookup the test-data in ssm automatically.
-    v2 = config.TEST_NAME
+    # See if our config object can look up the test-data in ssm automatically.
+    v2 = config['TEST_NAME']
     assert v2 == expected_values['expected_value']
 
 
@@ -299,8 +300,8 @@ def test_basic_confg_features_with_parent_chain(directory: Directory):
     current_config.set_default(f"SOME_OTHER_NAME", "parent-default-value")
     current_config.set_default(f"ANOTHER_NAME", "parent-default-another-v")
 
-    assert parent_config.SOME_OTHER_NAME == "parent-default-value"
-    assert parent_config.ANOTHER_NAME == "parent-default-another-v"
+    assert parent_config['SOME_OTHER_NAME'] == "parent-default-value"
+    assert parent_config['ANOTHER_NAME'] == "parent-default-another-v"
 
     # Testing the get_default basic method.
     assert parent_config.get_default(f"ANOTHER_NAME") == "parent-default-another-v"
@@ -310,17 +311,17 @@ def test_basic_confg_features_with_parent_chain(directory: Directory):
     )
 
     with Config():
-        assert current_config.SOME_OTHER_NAME == "parent-default-value"
-        current_config.SOME_OTHER_NAME = "overriden-on-child"
-        assert current_config.SOME_OTHER_NAME == "overriden-on-child"
+        assert current_config['SOME_OTHER_NAME'] == "parent-default-value"
+        current_config['SOME_OTHER_NAME'] = "overriden-on-child"
+        assert current_config['SOME_OTHER_NAME'] == "overriden-on-child"
 
         # This happens because the child object is in the parent-chain because the child
         # is the current config.
         assert parent_config.get("SOME_OTHER_NAME") == "overriden-on-child"
 
         # The parent check's it's self first before looking at the parent chain.
-        parent_config.SOME_OTHER_NAME = "overriden-on-parent"
-        assert parent_config.SOME_OTHER_NAME == "overriden-on-parent"
+        parent_config['SOME_OTHER_NAME'] = "overriden-on-parent"
+        assert parent_config['SOME_OTHER_NAME'] == "overriden-on-parent"
 
         # We should still be able to get the default via this method
         assert parent_config.get_default(f"SOME_OTHER_NAME") == "parent-default-value"
@@ -328,19 +329,19 @@ def test_basic_confg_features_with_parent_chain(directory: Directory):
 
         assert parent_config.get_override('SOME_OTHER_NAME') == "overriden-on-parent"
         # Remove the override, see if that worked.
-        parent_config.SOME_OTHER_NAME = Default
-        assert parent_config.SOME_OTHER_NAME == "overriden-on-child"
+        parent_config['SOME_OTHER_NAME'] = Default
+        assert parent_config['SOME_OTHER_NAME'] == "overriden-on-child"
         assert parent_config.get_override('SOME_OTHER_NAME') is Default
 
     # The child config is no longer the current, so it's overrides are forgotten.
-    assert current_config.SOME_OTHER_NAME == "parent-default-value"
+    assert current_config['SOME_OTHER_NAME'] == "parent-default-value"
 
 
 @Config(providers=[SsmParamStoreProvider])  # Not using EnvironmentalProvider, only Ssm...Provider.
 def test_exported_values(directory: Directory):
     # This is for making sure the default value does not somehow override other ways
     # config get's it's value [Config should use defaults as the last-resort].
-    config.set_default('TEST_CACHER_NOT_USED', 'default-value')
+    config.set_default('some_exported_name', 'default-value')
     another_service = "another_service"
 
     config.add_export(service=another_service)
@@ -354,7 +355,7 @@ def test_exported_values(directory: Directory):
     )
 
     # Grab the existing values from the providers, make sure we see it [also caches it in cacher].
-    assert config.SOME_EXPORTED_NAME == 'an-exported-value'
+    assert config['SOME_EXPORTED_NAME'] == 'an-exported-value'
 
     # todo: Put some normal config values in the normal directories, ensure exported
     #   values don't override any of them.
@@ -370,12 +371,12 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
     config.set_default('TEST_CACHER_NOT_USED', 'default-value')
 
     # Grab the existing values from the providers, make sure we see it [also caches it in cacher].
-    assert config.TEST_CACHER_NOT_USED == 'default-value'
+    assert config['TEST_CACHER_NOT_USED'] == 'default-value'
 
     # Define our env-var.
     with EnvironmentalProvider(env_vars={'TEST_CACHER_NOT_USED': 'rightValue'}):
         # Make sure the environmental variable is now taking priority over cacher.
-        assert config.TEST_CACHER_NOT_USED == "rightValue"
+        assert config['TEST_CACHER_NOT_USED'] == "rightValue"
 
     # Ensure the values did not go into the cache
     # we are verifying that the cache got updated correctly with this check.
@@ -386,7 +387,7 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
             directory=directory,
             directory_chain=config.directory_chain,
             provider_chain=config.provider_chain,
-            environ=Directory(service=config.SERVICE_NAME, env=config.APP_ENV),
+            environ=Directory(service=settings.service, env=settings.environment),
         )
         is None
     )
@@ -404,17 +405,17 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
     config.set_default('TEST_CACHER_NOT_USED', 'default-value')
 
     # Grab the existing values from the providers, make sure we see it [also caches it in cacher].
-    assert config.TEST_CACHER_NOT_USED == 'default-value'
+    assert config['TEST_CACHER_NOT_USED'] == 'default-value'
 
     # Define our env-var.
     with EnvironmentalProvider(env_vars={'TEST_CACHER_NOT_USED': 'rightValue'}):
         # Make sure the environmental variable is now taking priority over cacher.
-        assert config.TEST_CACHER_NOT_USED == "rightValue"
+        assert config['TEST_CACHER_NOT_USED'] == "rightValue"
 
     # Make sure it goes back to previous value from defaults
-    assert config.TEST_CACHER_NOT_USED == 'default-value'
+    assert config['TEST_CACHER_NOT_USED'] == 'default-value'
 
-    assert config.SERVICE_NAME == 'testing'
+    assert settings.service == 'testing'
 
     # Ensure the values did not go into the cache
     # we are verifying that the cache got updated correctly with this check.
@@ -424,7 +425,7 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
         directory=directory,
         directory_chain=config.directory_chain,
         provider_chain=config.provider_chain,
-        environ=Directory(service=config.SERVICE_NAME, env=config.APP_ENV),
+        environ=Directory(service=settings.service, env=settings.environment),
     )
 
     assert cached_item.value is None
@@ -437,12 +438,12 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
     )
 
     # Cacher already cached this (from earilier)
-    assert config.TEST_CACHER_NOT_USED == "default-value"
+    assert config['TEST_CACHER_NOT_USED'] == "default-value"
 
     # We are no longer using a cacher, but SsmParamStoreProvider already looked up values in
     # ssm before we made our ssm change and should still return the old value.
     config2 = Config(cacher=None)
-    assert config2.TEST_CACHER_NOT_USED == "default-value"
+    assert config2['TEST_CACHER_NOT_USED'] == "default-value"
 
     # We create a brand-new blank SsmParamStoreProvider, when this provider is asked
     # about a value, it will re-lookup the value since it knows nothing.
@@ -450,14 +451,14 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
         # We are using a new config via `with` statement, we turn off the cacher to force
         # Config to ask SsmParamStoreProvider again for the value.
         with Config(cacher=None):
-            assert config.TEST_CACHER_NOT_USED == "ssmValue"
+            assert config['TEST_CACHER_NOT_USED'] == "ssmValue"
 
         # Ensure the temporary config object is not being used anymore, should use cacher again.
-        assert config.TEST_CACHER_NOT_USED == "default-value"
+        assert config['TEST_CACHER_NOT_USED'] == "default-value"
 
 
 def test_config_item_not_logging_value(directory: Directory):
-    config.SOME_SETTING = "my-value"
+    config['SOME_SETTING'] = "my-value"
     item = config.get_item('some_setting')
     # Normal string should NOT include value (security)
     assert 'my-value' not in f'{item}'
@@ -493,7 +494,7 @@ def test_expire_internal_local_cache(directory: Directory):
     # Basic defaults-test.
     InternalLocalProviderCache.grab().expire_time_delta = dt.timedelta(milliseconds=250)
 
-    path = f'/{config.SERVICE_NAME}/{config.APP_ENV}/exp_test_value'
+    path = f'/{settings.service}/{settings.environment}/exp_test_value'
     boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue",
@@ -538,62 +539,48 @@ def test_expire_internal_local_cache(directory: Directory):
 @Config(providers=DEFAULT_TESTING_PROVIDERS, cacher=DynamoCacher)
 def test_cache_uses_env_vars_by_default(directory: Directory):
     # First, put in value in SSM
-    path = f'/{config.SERVICE_NAME}/{config.APP_ENV}/exp_test_value_3'
+    path = f'/{settings.service}/{settings.environment}/exp_test_value_3'
     boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue3",
         Type="String",
     )
 
-    service_org = os.environ.get('SERVICE_NAME')
-    env_org = os.environ.get('APP_ENV')
-    try:
-        if service_org is not None:
-            del os.environ['SERVICE_NAME']
-        if env_org is not None:
-            del os.environ['APP_ENV']
+    # Override service/environment directly on config object with current values
+    config.service = settings.service
+    config.environment = settings.environment
 
-        # We should currently have no values for these in env-vars:
-        assert os.environ.get('SERVICE_NAME') is None
-        assert os.environ.get('APP_ENV') is None
+    # Override settings/default with different values.
+    settings.service = 'some-other-service'
+    settings.environment = 'some-other-env'
 
-        # Ensure we are working like we expect, unit-test-conf overridden service/environment on
-        # Config objects and since there are no env-vars, it will use the ones one Config.
-        assert config.get('exp_test_value_3') == 'expiringTestValue3'
-        table = _ConfigDynamoTable(table_name='global-configCache', cache_table=True)
-        items = list(table.get_all_items())
+    # Ensure we are working like we expect, we explicitly set service/environment directly on
+    # config object; lets ensure it uses them and not the default values.
+    assert config.get('exp_test_value_3') == 'expiringTestValue3'
+    table = _ConfigDynamoTable(table_name='global-configCache', cache_table=True)
+    items = list(table.get_all_items())
 
-        # See if what we stored in the cache table is what we expect.
-        assert len(items) == 1
-        assert items[0].cache_hash_key == f'/{config.SERVICE_NAME}/{config.APP_ENV}'
+    # See if what we stored in the cache table is what we expect.
+    assert len(items) == 1
+    assert items[0].cache_hash_key == f'/{settings.service}/{settings.environment}'
 
-        # Now, set the environmental-vars and see if cacher will use these over the ones
-        # overridden on Config object:
-        os.environ['SERVICE_NAME'] = 'testserv'
-        os.environ['APP_ENV'] = 'testenv'
+    # Now, set the environmental-vars and see if cacher will use these over the ones
+    # overridden on Config object:
+    settings.service = 'testserv'
+    settings.environment = 'testenv'
 
-        # We should still get our value, since the overridden service/environment on Config
-        # object does not change how it looks up values in SSM, SecretsManager, etc:
-        assert config.get('exp_test_value_3') == 'expiringTestValue3'
+    # We should still get our value, since the overridden service/environment on Config
+    # object does not change how it looks up values in SSM, SecretsManager, etc:
+    assert config.get('exp_test_value_3') == 'expiringTestValue3'
 
-        # But the cacher should use the environ-vars as the place to store the values in
-        # the cache table, so check to see if the old value is still cached in old location
-        # and if the cache table now has a second item with the environ-vars as the hash key.
-        items = list(table.get_all_items())
-        assert len(items) == 2
-        hash_keys_in_table = {o.cache_hash_key for o in items}
-        expected_hash_keys = {f'/{config.SERVICE_NAME}/{config.APP_ENV}', '/testserv/testenv'}
-        assert hash_keys_in_table == expected_hash_keys
-    finally:
-        if service_org is not None:
-            os.environ['SERVICE_NAME'] = service_org
-        else:
-            os.environ.pop('SERVICE_NAME', None)
-
-        if env_org is not None:
-            os.environ['APP_ENV'] = env_org
-        else:
-            os.environ.pop('APP_ENV', None)
+    # But the cacher should use the environ-vars as the place to store the values in
+    # the cache table, so check to see if the old value is still cached in old location
+    # and if the cache table now has a second item with the environ-vars as the hash key.
+    items = list(table.get_all_items())
+    assert len(items) == 2
+    hash_keys_in_table = {o.cache_hash_key for o in items}
+    expected_hash_keys = {f'/some-other-service/some-other-env', '/testserv/testenv'}
+    assert hash_keys_in_table == expected_hash_keys
 
 
 @Config(providers=DEFAULT_TESTING_PROVIDERS, cacher=DynamoCacher)
@@ -601,7 +588,7 @@ def test_dynamo_cacher_retrieves_new_values_after_local_cache_expires(directory:
     # Basic defaults-test.
     InternalLocalProviderCache.grab().expire_time_delta = dt.timedelta(milliseconds=250)
 
-    path = f'/{config.SERVICE_NAME}/{config.APP_ENV}/exp_test_value'
+    path = f'/{settings.service}/{settings.environment}/exp_test_value'
     boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue",

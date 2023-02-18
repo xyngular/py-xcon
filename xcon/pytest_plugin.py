@@ -19,6 +19,7 @@ import pytest
 
 from xcon.providers import EnvironmentalProvider
 from xcon import Config
+from xcon.conf import settings
 
 
 @pytest.fixture(autouse=True)
@@ -93,18 +94,14 @@ def _setup_config_for_testing():
     # Get config object from current/new context:
     config = Config.grab()
 
+
     # We default to ONLY use 'EnvironmentalProvider'.
     # We tell it not to use a cacher or parent, not testing those aspects in this test.
-    config.providers = [EnvironmentalProvider]
+    settings.providers = [EnvironmentalProvider]
 
     # We have no providers, and so nothing should be cached....
     # But to be safe and make it obvious, explicitly disable cacher by default for unit-tests.
     config.cacher = None
-
-    # Set an override for the env/service name, when config first needs to lookup a value
-    # it will use these to create the default set of directories.
-    config.SERVICE_NAME = 'testing'
-    config.APP_ENV = 'unit'
 
     return config
 

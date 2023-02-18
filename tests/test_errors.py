@@ -20,7 +20,7 @@ from xcon.providers import (
     DynamoProvider,
     SsmParamStoreProvider,
     SecretsManagerProvider,
-    DynamoCacher, default_provider_types,
+    DynamoCacher,
 )
 from xcon.providers.dynamo import _ConfigDynamoTable
 

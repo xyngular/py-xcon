@@ -385,8 +385,9 @@ class DynamoCacher(ProviderCacher):
         Otherwise, we will return the passed_in_environ, which should be the one
         that came from Config and is based on that Config's Config.APP_ENV and Config.SERVICE_NAME.
         """
-        e_service = os.environ.get('SERVICE_NAME')
-        e_env = os.environ.get('APP_ENV')
+        from xcon.conf import settings
+        e_service = settings.service
+        e_env = settings.environment
 
         if not e_service or not e_env:
             return passed_in_environ
