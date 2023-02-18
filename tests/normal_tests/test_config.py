@@ -100,7 +100,7 @@ def test_env_provider():
     assert item.value == 'hello'
 
     # Ensure we don't got some non-existent value...
-    assert config.get_value("some_other_non_existant_env_var") is None
+    assert config.get_value("some_other_non_existent_env_var") is None
 
 
 @moto.mock_dynamodb
