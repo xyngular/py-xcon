@@ -19,7 +19,7 @@ import pytest
 
 from xcon.providers import EnvironmentalProvider
 from xcon import Config
-from xcon.conf import settings
+from xcon import xcon_settings
 
 
 @pytest.fixture(autouse=True)
@@ -38,7 +38,7 @@ def xcon_test_config(xinject_test_context):
         SERVICE_NAME='testing'
         APP_ENV='unit'
 
-    A good general way to change Config settings during unit tests is to simply set them on the
+    A good general way to change Config xcon_settings during unit tests is to simply set them on the
     default `Config` object:
 
     >>> from xyn_config import config
@@ -53,7 +53,7 @@ def xcon_test_config(xinject_test_context):
     >>> from xyn_config import config, Config
     >>> from xyn_config.providers import DynamoCacher
     >>>
-    >>> # Create a new Config object with desired settings and then make it the current one!
+    >>> # Create a new Config object with desired xcon_settings and then make it the current one!
     >>> # In this case, we enable the cacher explicitly (not using `Default` here).
     >>> # See `CONFIG_DISABLE_DEFAULT_CACHER` in the README.md for more details.
     >>> @Config(cacher=DynamoCacher):
@@ -69,7 +69,7 @@ def xcon_test_config(xinject_test_context):
     ...    # Check default unit-test config:
     ...    assert config.resolved_cacher is None
     ...
-    ...    # Activate new Config settings:
+    ...    # Activate new Config xcon_settings:
     ...    with Config(cacher=DynamoCacher):
     ...         assert isinstance(config.resolved_cacher, DynamoCacher)
 
@@ -97,7 +97,7 @@ def _setup_config_for_testing():
 
     # We default to ONLY use 'EnvironmentalProvider'.
     # We tell it not to use a cacher or parent, not testing those aspects in this test.
-    settings.providers = [EnvironmentalProvider]
+    xcon_settings.providers = [EnvironmentalProvider]
 
     # We have no providers, and so nothing should be cached....
     # But to be safe and make it obvious, explicitly disable cacher by default for unit-tests.

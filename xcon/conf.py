@@ -9,7 +9,7 @@ from xsettings.env_settings import EnvVarRetriever
 _env_retriever = EnvVarRetriever()
 
 
-class Settings(_Settings):
+class XconSettings(_Settings):
     def __init__(self):
         super().__init__()
         # TODO: Find a simpler/easier way to allocate mutable things like `dict`m `list`,
@@ -60,10 +60,10 @@ class Settings(_Settings):
     """
     Default list of directories to use.
     
-    By default `{service}` will be replaced with `Settings.service`,
+    By default `{service}` will be replaced with `XconSettings.service`,
     (which by default will use `APP_NAME` environmental variable).
     
-    By default `{environment}` will be replaced with `Settings.environment`,
+    By default `{environment}` will be replaced with `XconSettings.environment`,
     (which by default will use `APP_ENV` environmental variable).
     """
 
@@ -92,4 +92,4 @@ class Settings(_Settings):
     )
 
 
-settings = Settings.proxy()
+xcon_settings = XconSettings.proxy()

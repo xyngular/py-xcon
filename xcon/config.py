@@ -38,7 +38,7 @@ from .provider import Provider, ProviderChain, ProviderCacher, InternalLocalProv
 from .providers import EnvironmentalProvider
 from .providers.dynamo import DynamoCacher
 
-from xcon.conf import settings
+from xcon.conf import xcon_settings
 
 xlog = getLogger(__name__)
 
@@ -164,7 +164,7 @@ class Config(Dependency):
             If `xsentinels.Default`: Uses the first one from [Parent Chain](#parent-chain).
             
             If everyone in the parent chain is set to `Default`,
-            uses `xcon.conf.Settings.directories`.
+            uses `xcon.conf.XconSettings.directories`.
 
             Various ways to change what directories to use:
 
@@ -202,7 +202,7 @@ class Config(Dependency):
         providers: Union[Iterable[Type[xcon.provider.Provider]], xsentinels.DefaultType]
             List of provider types to use. If set to `Default`, uses the first one from
             [Parent Chain](#parent-chain). If everyone in the parent chain is set to `Default`,
-            uses `xcon.conf.Settings.providers`.
+            uses `xcon.conf.XconSettings.providers`.
 
         cacher: Type[xcon.provider.ProviderCacher]
             In the future, I may allow other cachers to be passed in via this param, but right
@@ -215,7 +215,7 @@ class Config(Dependency):
             - If left as `xsentinels.Default`:
                 - Must have a service/enviroment we can use
                   (ie: APP_ENV / APP_NAME;
-                      `xcon.conf.Settings.environment` / `xcon.conf.Settings.service`
+                      `xcon.conf.XconSettings.environment` / `xcon.conf.XconSettings.service`
                   ).
                   If so, we will attempt to read/write to a special Dynamo table that has
                   a flattened list of name/value pairs that are tied to the current service,
@@ -223,7 +223,7 @@ class Config(Dependency):
 
             The cacher-path will use current service/environment
             (`APP_ENV` / `APP_NAME`;
-            `xcon.conf.Settings.environment` / `xcon.conf.Settings.service`
+            `xcon.conf.XconSettings.environment` / `xcon.conf.XconSettings.service`
             ).
 
             If you want change where you lookup variables without effecting the cacher-path,
@@ -279,7 +279,7 @@ class Config(Dependency):
             See the Config class doc, and the 'Search Order' section.
 
         environment: Dict[str, Default]
-            Used to easily override the `APP_ENV` / `xcon.conf.Settings.environment`.
+            Used to easily override the `APP_ENV` / `xcon.conf.XconSettings.environment`.
             Infact, `__init__` will simply do this if you provide a value for `environment`:
 
             >>> self.environment = environment
@@ -288,12 +288,12 @@ class Config(Dependency):
             (ie: `/{APP_NAME}/{APP_ENV}/...`) but not effect the cacher's hash-key at the same
             time.
             
-            The cacher always uses `xcon.conf.Settings.environment` for it's dynamo table
-            hash-key.  That way whatever settings are looked up from alternet environment/service
+            The cacher always uses `xcon.conf.XconSettings.environment` for it's dynamo table
+            hash-key.  That way whatever xcon_settings are looked up from alternet environment/service
             names; it won't try to write them into that apps service/enviroment cached values.
             
-            It will keep the newley cached values into the `xcon.conf.Settings.service`
-            and `xcon.conf.Settings.enviroment` hash-value.
+            It will keep the newley cached values into the `xcon.conf.XconSettings.service`
+            and `xcon.conf.XconSettings.enviroment` hash-value.
             
             It will still keep track of the values in the overriden service/enviroment
             via the dynamo tables range-key, so things will still be properly/sepeatly
@@ -301,7 +301,7 @@ class Config(Dependency):
 
 
         service: Dict[str, Default]
-            Used to easily override the `APP_NAME` / `xcon.conf.Settings.service`.
+            Used to easily override the `APP_NAME` / `xcon.conf.XconSettings.service`.
             Infact, `__init__` will simply do this if you provide a value for `service`:
 
             >>> self.service = service
@@ -310,12 +310,12 @@ class Config(Dependency):
             (ie: `/{APP_NAME}/{APP_ENV}/...`) but not effect the cacher's hash-key at the same
             time.
             
-            The cacher always uses `xcon.conf.Settings.environment` for it's dynamo table
-            hash-key.  That way whatever settings are looked up from alternet environment/service
+            The cacher always uses `xcon.conf.XconSettings.environment` for it's dynamo table
+            hash-key.  That way whatever xcon_settings are looked up from alternet environment/service
             names; it won't try to write them into that apps service/enviroment cached values.
             
-            It will keep the newley cached values into the `xcon.conf.Settings.service`
-            and `xcon.conf.Settings.enviroment` hash-value.
+            It will keep the newley cached values into the `xcon.conf.XconSettings.service`
+            and `xcon.conf.XconSettings.enviroment` hash-value.
             
             It will still keep track of the values in the overriden service/enviroment
             via the dynamo tables range-key, so things will still be properly/sepeatly
@@ -332,7 +332,7 @@ class Config(Dependency):
         self._use_parent = use_parent
 
         # We lazy-lookup directories if it's `Default`, this is so you can directly override
-        # settings.service and/or settings.environment if you want to easily change the defaults.
+        # xcon_settings.service and/or xcon_settings.environment if you want to easily change the defaults.
         # See 'self.directories' property.
         self.directories = directories
 
@@ -437,7 +437,7 @@ class Config(Dependency):
         """
         These are added to the `Config.directory_chain` after the normal directories from
         `Config.directories`. The purpose of these are to see 'exported' values from other
-        services.  We currently use the current `xcon.conf.Settings.environment` or
+        services.  We currently use the current `xcon.conf.XconSettings.environment` or
         `Config.resolved_environment` when looking at the exported values for a service.
 
         Directories that are created in the `Config.directory_chain` from these exports follow
@@ -636,7 +636,7 @@ class Config(Dependency):
         If it was not overridden, then returns `Default`. This is a placeholder that represents
         the default value should be used. You can set the service via `config.service = Default`
         to remove any overridden and return to having it lookup the service like normal
-        from any parent(s) or `xcon.conf.Settings.service`.
+        from any parent(s) or `xcon.conf.XconSettings.service`.
 
         If your interested it knowing what it's current using as the service name, you could
         use `Config.resolved_service`. It will return the currently resolved service name
@@ -659,7 +659,7 @@ class Config(Dependency):
         If it was not overridden, then returns `Default`. This is a placeholder that represents
         the default value should be used. You can set the service via
         `config.environment = Default` to remove any overridden and return to having it lookup the
-        service like normal from any parent(s) or `xcon.conf.Settings.environment`.
+        service like normal from any parent(s) or `xcon.conf.XconSettings.environment`.
 
         If your interested it knowing what it's current using as the service name, you could
         use `Config.resolved_environment`. It will return the currently resolved environment name
@@ -681,7 +681,7 @@ class Config(Dependency):
     def resolved_service(self):
         """
         Will check self (`Config.service`), the [Parent Chain](#parent-chain) and finally
-        `xcon.conf.Settings.service` for the current value this Config object should
+        `xcon.conf.XconSettings.service` for the current value this Config object should
         use when resolving directory paths to lookup config values.
         """
         return self._service_with_cursor(cursor=self._parent_chain().start_cursor())
@@ -690,7 +690,7 @@ class Config(Dependency):
     def resolved_environment(self):
         """
         Will check self (`Config.environment`), the [Parent Chain](#parent-chain) and finally
-        `xcon.conf.Settings.environment` for the current value this Config object should
+        `xcon.conf.XconSettings.environment` for the current value this Config object should
         use when resolving directory paths to lookup config values.
         """
         return self._environment_with_cursor(cursor=self._parent_chain().start_cursor())
@@ -979,9 +979,9 @@ class Config(Dependency):
         return self._resolve_attr_values_with_cursor(
             cursor=cursor,
             attribute_name="_providers",
-            # Default to settings.providers if there are any,
+            # Default to xcon_settings.providers if there are any,
             # otherwise just the EnvironmentalProvider:
-            defaults_factory=lambda: settings.providers or [EnvironmentalProvider]
+            defaults_factory=lambda: xcon_settings.providers or [EnvironmentalProvider]
         )
 
     def _resolve_directories_with_cursor(
@@ -1403,21 +1403,21 @@ class Config(Dependency):
 
         return {
             d.resolve(service=service, environment=environment): None
-            for d in xloop(settings.directories)
+            for d in xloop(xcon_settings.directories)
         }
 
     def _service_with_cursor(self, cursor: Optional[_ParentCursor]) -> str:
         return self._resolve_attr_with_cursor(
             cursor=cursor,
             attribute_name='_service',
-            defaults_factory=lambda: settings.service or 'global'
+            defaults_factory=lambda: xcon_settings.service or 'global'
         )
 
     def _environment_with_cursor(self, cursor: Optional[_ParentCursor]) -> str:
         return self._resolve_attr_with_cursor(
             cursor=cursor,
             attribute_name='_environment',
-            defaults_factory=lambda: settings.environment or 'all'
+            defaults_factory=lambda: xcon_settings.environment or 'all'
         )
 
     def _get_special_non_provider_item_with_cursor(
@@ -1509,8 +1509,8 @@ Config.grab()
 
 
 def _env_only_is_turned_on() -> bool:
-    # Check settings to see if env-only is  turned on.
-    return settings.env_only_provider
+    # Check xcon_settings to see if env-only is  turned on.
+    return xcon_settings.env_only_provider
 
 
 # todo: remove this function, unused now.
@@ -1543,7 +1543,7 @@ def _replace_standard_directories(*, service: str, env: str) -> OrderedSet[Direc
     For more details and context surounding what is returned, see
     [Standard Directory Paths](#standard-directory-paths). Below is a summary.
 
-    As a side-note: you can change the default directories via `xcon.conf.Settings.directories`,
+    As a side-note: you can change the default directories via `xcon.conf.XconSettings.directories`,
     so if that changes then what this returns will also change.
 
     Right now we return these directories by default, in priority order:
@@ -1587,7 +1587,7 @@ _BlankParentChain = _ParentChain()
 
 class ConfigRetriever(SettingsRetrieverProtocol):
     """Retrieving the setting from config"""
-    def __call__(self, *, field: SettingsField, settings: 'Settings') -> Any:
+    def __call__(self, *, field: SettingsField, settings: 'XconSettings') -> Any:
         return config.get(field.name)
 
 

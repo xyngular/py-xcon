@@ -4,7 +4,7 @@ import moto
 import pytest
 from xcon import config
 from xboto.resource import dynamodb
-from xcon.conf import settings
+from xcon import xcon_settings
 
 
 service_name_at_import_time = os.environ['APP_NAME']
@@ -26,7 +26,7 @@ def directory():
         an isolated XContext for you as well.
     """
     from xcon.directory import Directory
-    return Directory(service=settings.service, env=settings.environment)
+    return Directory(service=xcon_settings.service, env=xcon_settings.environment)
 
 
 @pytest.fixture(autouse=True)

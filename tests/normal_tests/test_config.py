@@ -3,7 +3,7 @@ import functools
 import os
 import time
 from typing import Type
-from xcon.conf import settings
+from xcon import xcon_settings
 
 from xcon.providers.common import AwsProvider
 
@@ -123,7 +123,7 @@ def test_config_disable_via_env_var():
         # Ensure when using an explict cacher, we use it regardless of env-var value.
         with Config(cacher=DynamoCacher):
             assert isinstance(config.resolved_cacher, DynamoCacher)
-            # ensure child config uses parent's config settings.
+            # ensure child config uses parent's config xcon_settings.
             with Config():
                 assert isinstance(config.resolved_cacher, DynamoCacher)
 
@@ -234,7 +234,7 @@ def test_env_are_higher_priority_than_cacher(directory: Directory):
                 directory=directory,
                 directory_chain=config.directory_chain,
                 provider_chain=config.provider_chain,
-                environ=Directory(service=settings.service, env=settings.environment),
+                environ=Directory(service=xcon_settings.service, env=xcon_settings.environment),
             )
             == 'wrongValue'
         )
@@ -387,7 +387,7 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
             directory=directory,
             directory_chain=config.directory_chain,
             provider_chain=config.provider_chain,
-            environ=Directory(service=settings.service, env=settings.environment),
+            environ=Directory(service=xcon_settings.service, env=xcon_settings.environment),
         )
         is None
     )
@@ -415,7 +415,7 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
     # Make sure it goes back to previous value from defaults
     assert config['TEST_CACHER_NOT_USED'] == 'default-value'
 
-    assert settings.service == 'testing'
+    assert xcon_settings.service == 'testing'
 
     # Ensure the values did not go into the cache
     # we are verifying that the cache got updated correctly with this check.
@@ -425,7 +425,7 @@ def test_env_and_defaults_do_not_go_into_cache(directory: Directory):
         directory=directory,
         directory_chain=config.directory_chain,
         provider_chain=config.provider_chain,
-        environ=Directory(service=settings.service, env=settings.environment),
+        environ=Directory(service=xcon_settings.service, env=xcon_settings.environment),
     )
 
     assert cached_item.value is None
@@ -494,7 +494,7 @@ def test_expire_internal_local_cache(directory: Directory):
     # Basic defaults-test.
     InternalLocalProviderCache.grab().expire_time_delta = dt.timedelta(milliseconds=250)
 
-    path = f'/{settings.service}/{settings.environment}/exp_test_value'
+    path = f'/{xcon_settings.service}/{xcon_settings.environment}/exp_test_value'
     boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue",
@@ -539,7 +539,7 @@ def test_expire_internal_local_cache(directory: Directory):
 @Config(providers=DEFAULT_TESTING_PROVIDERS, cacher=DynamoCacher)
 def test_cache_uses_env_vars_by_default(directory: Directory):
     # First, put in value in SSM
-    path = f'/{settings.service}/{settings.environment}/exp_test_value_3'
+    path = f'/{xcon_settings.service}/{xcon_settings.environment}/exp_test_value_3'
     boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue3",
@@ -547,12 +547,12 @@ def test_cache_uses_env_vars_by_default(directory: Directory):
     )
 
     # Override service/environment directly on config object with current values
-    config.service = settings.service
-    config.environment = settings.environment
+    config.service = xcon_settings.service
+    config.environment = xcon_settings.environment
 
-    # Override settings/default with different values.
-    settings.service = 'some-other-service'
-    settings.environment = 'some-other-env'
+    # Override xcon_settings/default with different values.
+    xcon_settings.service = 'some-other-service'
+    xcon_settings.environment = 'some-other-env'
 
     # Ensure we are working like we expect, we explicitly set service/environment directly on
     # config object; lets ensure it uses them and not the default values.
@@ -562,12 +562,12 @@ def test_cache_uses_env_vars_by_default(directory: Directory):
 
     # See if what we stored in the cache table is what we expect.
     assert len(items) == 1
-    assert items[0].cache_hash_key == f'/{settings.service}/{settings.environment}'
+    assert items[0].cache_hash_key == f'/{xcon_settings.service}/{xcon_settings.environment}'
 
     # Now, set the environmental-vars and see if cacher will use these over the ones
     # overridden on Config object:
-    settings.service = 'testserv'
-    settings.environment = 'testenv'
+    xcon_settings.service = 'testserv'
+    xcon_settings.environment = 'testenv'
 
     # We should still get our value, since the overridden service/environment on Config
     # object does not change how it looks up values in SSM, SecretsManager, etc:
@@ -588,7 +588,7 @@ def test_dynamo_cacher_retrieves_new_values_after_local_cache_expires(directory:
     # Basic defaults-test.
     InternalLocalProviderCache.grab().expire_time_delta = dt.timedelta(milliseconds=250)
 
-    path = f'/{settings.service}/{settings.environment}/exp_test_value'
+    path = f'/{xcon_settings.service}/{xcon_settings.environment}/exp_test_value'
     boto_clients.ssm.put_parameter(
         Name=path,
         Value="expiringTestValue",

@@ -35,7 +35,7 @@ Go to [How To Use](#how-to-use) for more details on how to use this library.
 
 
 - `xcon.config.ConfigSettings`: Used in projects to create a 'ConfigSettings' subclass.
-    The subclass would allow you easily specify project settings to lazily lookup via Config.
+    The subclass would allow you easily specify project xcon_settings to lazily lookup via Config.
 
 # How To Use
 
@@ -48,7 +48,7 @@ from .config import Config
 from . import providers
 from .config import config
 from .config import ConfigSettings
-from .conf import settings
+from .conf import xcon_settings
 
 from zsetup import setup
 
