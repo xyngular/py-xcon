@@ -626,3 +626,43 @@ def test_dynamo_cacher_retrieves_new_values_after_local_cache_expires(directory:
     # Removed the external dynamo cacher items from its table, and see if we get the new value now
     # (as it will now consult with ssm provider which should re-lookup the value due to expire).
     assert config.get('exp_test_value', ignore_local_caches=True) == 'expiringTestValue2'
+
+
+@Config(providers=DEFAULT_TESTING_PROVIDERS)
+def test_directory_order_followed():
+    s = xcon_settings.service
+    e = xcon_settings.environment
+
+    boto_clients.ssm.put_parameter(Name='/global/all/testv', Value="/g/a", Type="String")
+    assert config['testv'] == "/g/a"
+
+    boto_clients.ssm.put_parameter(Name=f'/global/{e}/testv', Value="/g/e", Type="String")
+    with InternalLocalProviderCache():
+        assert config['testv'] == "/g/e"
+
+    boto_clients.ssm.put_parameter(Name=f'/{s}/all/testv', Value="/s/a", Type="String")
+    with InternalLocalProviderCache():
+        assert config['testv'] == "/s/a"
+
+    boto_clients.ssm.put_parameter(Name=f'/{s}/{e}/testv', Value="/s/e", Type="String")
+    with InternalLocalProviderCache():
+        assert config['testv'] == "/s/e"
+
+    # Cache is still here, it only originally saw '/g/a'
+    assert config['testv'] == "/g/a"
+
+    InternalLocalProviderCache.grab().reset_cache()
+
+    assert config['testv'] == "/s/e"
+
+    config.directories = [
+        "/global/all/",
+        "/{service}/{environment}"
+    ]
+
+    assert config['testv'] == "/g/a"
+
+    config.directories = Default
+    assert config['testv'] == "/s/e"
+
+

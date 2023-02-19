@@ -53,9 +53,9 @@ class XconSettings(_Settings):
 
     directories: Sequence[Directory] = (
         Directory('/{service}/{environment}'),
-        Directory('/{service}'),
+        Directory('/{service}/all'),
         Directory('/global/{environment}'),
-        Directory('/global'),
+        Directory('/global/all'),
     )
     """
     Default list of directories to use.
