@@ -20,7 +20,7 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
-class Provider(Dependency, ABC):
+class Provider(Dependency):
     """
     Represents a Provider, which wraps a resource that can be used to store Config values based
     on a provided directory. It caches these directories so future lookups don't keep having to
@@ -206,7 +206,7 @@ class Provider(Dependency, ABC):
         return item.value if item else None
 
 
-class AwsProvider(Provider, ABC):
+class AwsProvider(Provider):
     """ AwsProvider is the Base class for Aws-associated config providers.
 
         There is some aws specific error handing that this class helps with among the
@@ -226,7 +226,7 @@ class AwsProvider(Provider, ABC):
         return cacher.get_cache_for_provider(provider=self, cache_constructor=lambda c: dict())
 
 
-class ProviderCacher(AwsProvider, ABC):
+class ProviderCacher(AwsProvider):
     # See `Provider.is_cacher` for docs.
     is_cacher = True
     """ This is set to True by default for ProviderCacher's.
@@ -501,7 +501,7 @@ class InternalLocalProviderCache(Dependency):
     (via `InternalLocalProviderCache.grab().expire_time_delta` = ...)
     you can also override this via an environmental variable:
 
-    `CONFIG_INTERNAL_CACHE_EXPIRATION_MINUTES`
+    `XCON_INTERNAL_CACHE_EXPIRATION_MINUTES`
 
     If this variable is defined, we will take the value as the number of minutes
     to wait until we expire/reset our cache.
@@ -511,8 +511,10 @@ class InternalLocalProviderCache(Dependency):
 
     def __init__(self):
         super().__init__()
-        if minutes := os.environ.get('CONFIG_INTERNAL_CACHE_EXPIRATION_MINUTES'):
-            self.expire_time_delta = dt.timedelta(minutes=int(minutes))
+        from xcon import xcon_settings
+        if minutes := xcon_settings.internal_cache_expiration_minutes:
+            if minutes > 0:
+                self.expire_time_delta = dt.timedelta(minutes=minutes)
         self.reset_cache()
 
     def get_cache_for_provider(
@@ -532,7 +534,7 @@ class InternalLocalProviderCache(Dependency):
         Otherwise, if you return None your expected to call `set_cache_for_provider` on
         the instance of InternalLocalProviderCache we give the constructor callback.
 
-        If we still don't have a value and you provided a constructor, we will raise a ValueError.
+        If we still don't have a value, and you provided a constructor, we will raise a ValueError.
         """
         self.expire_cache_if_needed()
         provider_id = id(provider)
