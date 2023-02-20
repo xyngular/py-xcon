@@ -3,6 +3,17 @@ name = "xcon"
 version = "0.3.0"
 description = "Dynamic configuration retreiver."
 authors = ["Josh Orr <josh@orr.blue>"]
+packages = [{include = "xcon"}]
+readme = "README.md"
+license = "The Unlicense (Unlicense)"
+repository = "https://github.com/xyngular/py-xsettings"
+keywords = ["settings", "configuration", "lazy", "boto", "aws", "secrets manager", "param store", "ssm"]
+classifiers = [
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: The Unlicense (Unlicense)"
+]
+
+
 
 [tool.poetry.dependencies]
 python = "^3.8"
