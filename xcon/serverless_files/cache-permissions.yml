@@ -29,7 +29,7 @@ Resources:
                   - - "arn:aws:dynamodb"
                     - Ref: "AWS::Region"
                     - Ref: "AWS::AccountId"
-                    - "table/global-config"
+                    - "table/global-all-config"
               - Fn::Join:
                   - ":"
                   - - "arn:aws:dynamodb"

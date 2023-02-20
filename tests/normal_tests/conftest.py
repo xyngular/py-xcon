@@ -43,13 +43,13 @@ def dynamo_cache_table(start_moto):
         TableName='global-all-configCache',
         KeySchema=[
             # Partition Key
-            {'AttributeName': 'directory', 'KeyType': 'HASH'},
+            {'AttributeName': 'app_key', 'KeyType': 'HASH'},
             # Sort Key
-            {'AttributeName': 'name', 'KeyType': 'RANGE'}
+            {'AttributeName': 'name_key', 'KeyType': 'RANGE'}
         ],
         AttributeDefinitions=[
-            {'AttributeName': 'directory', 'AttributeType': 'S'},
-            {'AttributeName': 'name', 'AttributeType': 'S'}
+            {'AttributeName': 'app_key', 'AttributeType': 'S'},
+            {'AttributeName': 'name_key', 'AttributeType': 'S'}
         ],
         # todo:
         #  YOu need to use a newer-boto3 for this to work than what lamda provides.
@@ -66,16 +66,16 @@ def dynamo_cache_table(start_moto):
 @pytest.fixture(autouse=True)
 def dynamo_provider_table(start_moto):
     return dynamodb.create_table(
-        TableName='global-config',
+        TableName='global-all-config',
         KeySchema=[
             # Partition Key
-            {'AttributeName': 'directory', 'KeyType': 'HASH'},
+            {'AttributeName': 'app_key', 'KeyType': 'HASH'},
             # Sort Key
-            {'AttributeName': 'name', 'KeyType': 'RANGE'}
+            {'AttributeName': 'name_key', 'KeyType': 'RANGE'}
         ],
         AttributeDefinitions=[
-            {'AttributeName': 'directory', 'AttributeType': 'S'},
-            {'AttributeName': 'name', 'AttributeType': 'S'}
+            {'AttributeName': 'app_key', 'AttributeType': 'S'},
+            {'AttributeName': 'name_key', 'AttributeType': 'S'}
         ],
         # todo:
         #  YOu need to use a newer-boto3 for this to work than what lamda provides.

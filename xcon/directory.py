@@ -516,7 +516,7 @@ class DirectoryItem:
 
         if real_name:
             name = real_name
-            cache_range_key = json['name']
+            cache_range_key = json['name_key']
         else:
             name = json['name']
 
@@ -527,7 +527,7 @@ class DirectoryItem:
 
         if real_directory:
             directory = real_directory
-            cache_hash_key = json['directory']
+            cache_hash_key = json['app_key']
         else:
             directory = json['directory']
 
@@ -585,8 +585,8 @@ class DirectoryItem:
         # See the doc-comments for `DirectoryItem.cache_hash_key` for more details of
         # why we are mapping `directory/name` to `real_(name/directory)`.
         response = {
-            'name': cache_range_key,
-            'directory': cache_hash_key,
+            'name_key': cache_range_key,
+            'app_key': cache_hash_key,
             'real_name': self.name,
             'original_name': self.original_name,
             'real_directory': self.directory.path,

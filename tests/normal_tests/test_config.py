@@ -274,7 +274,7 @@ def test_ssm_and_dynamo(directory: Directory, expected_values):
         Type="String",
     )
 
-    table = _ConfigDynamoTable(table_name='global-config')
+    table = _ConfigDynamoTable(table_name='global-all-config')
     item = DirectoryItem(
         name=expected_values['cache_item_name'],
         directory=directory,

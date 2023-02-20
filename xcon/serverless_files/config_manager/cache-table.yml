@@ -25,9 +25,9 @@ Resources:
     Properties:
       TableName: ${param:xconConfigCacheTableName, 'account-all-configCache'}
       AttributeDefinitions:
-        - AttributeName: app_key
+        - AttributeName: app_key  # Used to be `directory`...
           AttributeType: S
-        - AttributeName: name_key
+        - AttributeName: name_key  # Used to be `name`...
           AttributeType: S
       KeySchema:
         - AttributeName: app_key

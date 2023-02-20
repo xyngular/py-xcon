@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 
 class DynamoProvider(AwsProvider):
     """
-    Access a dynamo tabled called `global-config` when searching for a config value.
+    Access a dynamo tabled called `global-all-config` when searching for a config value.
     This provider allows one to have a structured list or dictionary. It supports JSON
     and will parse/decode it when it gets it from Dynamo into a real Python dict/list/str/etc!
     """
@@ -36,7 +36,7 @@ class DynamoProvider(AwsProvider):
     @property
     def _table(self) -> _ConfigDynamoTable:
         # todo: make table name configurable
-        return _ConfigDynamoTable(table_name='global-config')
+        return _ConfigDynamoTable(table_name='global-all-config')
 
     def get_item(
             self,
@@ -456,7 +456,7 @@ class _ConfigDynamoTable:
 
     def put_items(self, items: Sequence[DirectoryItem]):
         """ Uses a batch-writer to put the items.
-            WAY more efficient then doing it one at a time.
+            WAY more efficient than doing it one at a time.
             If you only give me one item, directly calls `put_item` without a batch-writer.
         """
         if not items:
@@ -478,8 +478,8 @@ class _ConfigDynamoTable:
         table = self.table
         for i in items:
             table.delete_item(Key={
-                'directory': i.cache_hash_key,
-                'name': i.cache_range_key
+                'app_key': i.cache_hash_key,
+                'name_key': i.cache_range_key
             })
 
     def get_items_for_directory(
@@ -504,7 +504,7 @@ class _ConfigDynamoTable:
         :return:
         """
         dir_path = Directory.from_path(directory).path
-        expression = conditions.Key('directory').eq(dir_path)
+        expression = conditions.Key('app_key').eq(dir_path)
 
         log.info(f"Getting Dynamo directory ({directory.path}).")
 
@@ -548,7 +548,7 @@ class _ConfigDynamoTable:
 
     def _with_batch_writer(self):
         """ Uses a batch-writer to put the items.
-            WAY more efficient then doing it one at a time.
+            WAY more efficient than doing it one at a time.
 
             You can use a batch writer via a `with` and then create another batch writer
             via `with_batch_writer()` and enter that one via `with` while the first one is
@@ -636,4 +636,4 @@ class _ConfigDynamoTable:
             self._batch_writer.__exit__(type, value, traceback)
 
     def _create_batch_writer(self):
-        return self.table.batch_writer(overwrite_by_pkeys=['directory', 'name'])
+        return self.table.batch_writer(overwrite_by_pkeys=['app_key', 'name_key'])
