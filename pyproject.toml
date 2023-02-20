@@ -48,10 +48,8 @@ norecursedirs = "lib/* tests/scripts .serverless .eggs dist/* node_modules"
 [tool.poetry.plugins]
 pytest11 = { xcon_pytest_plugin = "xcon.pytest_plugin"}
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
-
+[tool.custom.xpublish]
+extra-module-docs = ['xsentinels', 'xloop', 'xinject', 'xbool', 'xsettings']
 
 [tool.black]
 line-length = 99
@@ -76,3 +74,8 @@ exclude = '''
                      # the root of the project
 )
 '''
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
