@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.1](https://github.com/xyngular/py-xcon/compare/v0.3.0...v0.3.1) (2023-02-20)
+
+
+### Bug Fixes
+
+* project publishing metadata ([d4a2886](https://github.com/xyngular/py-xcon/commit/d4a2886ee1a2ef3a88db58fd6c4d9f83538b700a))
+* reame file name case. ([dd9e513](https://github.com/xyngular/py-xcon/commit/dd9e5137d4e80e3c94dc45dee0035b4ff7dd5898))
+* remove xyn_config refs (now it's `xcon`). ([223666f](https://github.com/xyngular/py-xcon/commit/223666f9085ede6a008b967dfac77ff50a5d685f))
+
 ## 0.3.0 (2023-02-20)
 
 
