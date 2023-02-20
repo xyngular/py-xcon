@@ -56,7 +56,6 @@ def dynamo_cache_table(start_moto):
         #  HOWEVER, the config table should always exist, so we should not have to really
         #  worry about it. If the able already exists we won't attempt to create it.
         BillingMode='PAY_PER_REQUEST',
-        Tags=[{'Key': 'DDBTableGroupKey', 'Value': 'xyn_config'}],
         SSESpecification={
             "Enabled": True
         }
@@ -82,7 +81,6 @@ def dynamo_provider_table(start_moto):
         #  HOWEVER, the config table should always exist, so we should not have to really
         #  worry about it. If the able already exists we won't attempt to create it.
         BillingMode='PAY_PER_REQUEST',
-        Tags=[{'Key': 'DDBTableGroupKey', 'Value': 'xyn_config'}],
         SSESpecification={
             "Enabled": True
         }

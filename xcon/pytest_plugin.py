@@ -10,7 +10,7 @@ Shared common fixtures for helping with unit-testing.
     You should be able to use any of these fixtures without importing them yourself.
 
     This is accomplished via the setup.py file in xcon, it tells pytest about the
-    `xyn_config.pytest_plugin` module so it can load them automatically.
+    `xcon.pytest_plugin` module so it can load them automatically.
 
 """
 from __future__ import annotations
@@ -41,7 +41,7 @@ def xcon_test_config(xinject_test_context):
     A good general way to change Config xcon_settings during unit tests is to simply set them on
     the default `Config` object:
 
-    >>> from xyn_config import config
+    >>> from xcon import config
     >>> from xyn_types import Default
     >>>
     >>> def text_something():
@@ -50,8 +50,8 @@ def xcon_test_config(xinject_test_context):
 
     Or you can create a new Config object, and activate it via decorator:
 
-    >>> from xyn_config import config, Config
-    >>> from xyn_config.providers import DynamoCacher
+    >>> from xcon import config, Config
+    >>> from xcon.providers import DynamoCacher
     >>>
     >>> # Create a new Config object with desired xcon_settings and then make it the current one!
     >>> # In this case, we enable the cacher explicitly (not using `Default` here).
@@ -62,8 +62,8 @@ def xcon_test_config(xinject_test_context):
 
     Or you can create a new Config object and activate/make-it-current via a with statement:
 
-    >>> from xyn_config import config, Config
-    >>> from xyn_config.providers import DynamoCacher
+    >>> from xcon import config, Config
+    >>> from xcon.providers import DynamoCacher
     >>>
     >>> def test_something():
     ...    # Check default unit-test config:
