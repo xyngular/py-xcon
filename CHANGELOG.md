@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/xyngular/py-xcon/compare/v0.3.1...v0.3.2) (2023-02-20)
+
+
+### Bug Fixes
+
+* doc-generator for pdoc3 dependencies. ([f8ca9f1](https://github.com/xyngular/py-xcon/commit/f8ca9f133c3610fe507c4d7959e67be73450e57b))
+
 ## [0.3.1](https://github.com/xyngular/py-xcon/compare/v0.3.0...v0.3.1) (2023-02-20)
 
 
