@@ -3,6 +3,18 @@ title: Getting Started
 ---
 ## Getting Started
 
+???+ warning "Docs not finished and are out of date!"
+    This is pre-release software, based on another code base and the docs
+    have not yet been completely finished/changed to accommodate the changes
+    made to clean aspects of it.
+
+    This wil lbe fixed over the next few weeks to a month.
+
+    For now, if you see refrences/names to things that don't exist
+    or have slightly different names in code, just beware of the situation.
+
+    Thank you for your support while the code base transitions to being open-source!
+
 This read me is split into several sections.
 
 The first is a quick reference on specific environmental variables, and basic use
