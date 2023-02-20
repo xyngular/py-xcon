@@ -332,7 +332,8 @@ class Config(Dependency):
         self._use_parent = use_parent
 
         # We lazy-lookup directories if it's `Default`, this is so you can directly override
-        # xcon_settings.service and/or xcon_settings.environment if you want to easily change the defaults.
+        # xcon_settings.service and/or xcon_settings.environment if you want to easily change
+        # the defaults.
         # See 'self.directories' property.
         self.directories = directories
 
@@ -1125,13 +1126,13 @@ class Config(Dependency):
             #      pass
             #
             # BUT if someone passes `Config(cacher=DynamoCacher)` explicitly we will use that
-            # regardless of what `CONFIG_DISABLE_DEFAULT_CACHER` is set too.
+            # regardless of what `XCON_DISABLE_DEFAULT_CACHER` is set too.
             #
             # Lower-casing it because `EnvironmentalProvider` will do that for us when looking it
             # up (it looks it up in a case-insensitive manner).
             # Trying to make it a tiny bit more efficient since this is called a lot.
             env_provider = EnvironmentalProvider.grab()
-            if bool_value(env_provider.get_value_without_environ("config_disable_default_cacher")):
+            if xcon_settings.disable_default_cacher:
                 return None
             cacher = DynamoCacher
 
@@ -1510,7 +1511,7 @@ Config.grab()
 
 def _env_only_is_turned_on() -> bool:
     # Check xcon_settings to see if env-only is  turned on.
-    return xcon_settings.env_only_provider
+    return xcon_settings.only_env_provider
 
 
 # todo: remove this function, unused now.
@@ -1543,7 +1544,8 @@ def _replace_standard_directories(*, service: str, env: str) -> OrderedSet[Direc
     For more details and context surounding what is returned, see
     [Standard Directory Paths](#standard-directory-paths). Below is a summary.
 
-    As a side-note: you can change the default directories via `xcon.conf.XconSettings.directories`,
+    As a side-note: you can change the default directories via
+    `xcon.conf.XconSettings.directories`,
     so if that changes then what this returns will also change.
 
     Right now we return these directories by default, in priority order:

@@ -9,7 +9,7 @@ Shared common fixtures for helping with unit-testing.
 
     You should be able to use any of these fixtures without importing them yourself.
 
-    This is accomplished via the setup.py file in xyn-config, it tells pytest about the
+    This is accomplished via the setup.py file in xcon, it tells pytest about the
     `xyn_config.pytest_plugin` module so it can load them automatically.
 
 """
@@ -26,7 +26,7 @@ from xcon import xcon_settings
 def xcon_test_config(xinject_test_context):
     """
     Important: This fixture should automatically be imported and auto-used as long as
-    `xyn-config` is installed as a dependency in any project.
+    `xcon` is installed as a dependency in any project.
 
     This fixture is automatically used for each unit-test.
 
@@ -38,8 +38,8 @@ def xcon_test_config(xinject_test_context):
         SERVICE_NAME='testing'
         APP_ENV='unit'
 
-    A good general way to change Config xcon_settings during unit tests is to simply set them on the
-    default `Config` object:
+    A good general way to change Config xcon_settings during unit tests is to simply set them on
+    the default `Config` object:
 
     >>> from xyn_config import config
     >>> from xyn_types import Default
@@ -55,7 +55,7 @@ def xcon_test_config(xinject_test_context):
     >>>
     >>> # Create a new Config object with desired xcon_settings and then make it the current one!
     >>> # In this case, we enable the cacher explicitly (not using `Default` here).
-    >>> # See `CONFIG_DISABLE_DEFAULT_CACHER` in the README.md for more details.
+    >>> # See `XCON_DISABLE_DEFAULT_CACHER` in the README.md for more details.
     >>> @Config(cacher=DynamoCacher):
     >>> def test_something():
     ...    assert isinstance(config.resolved_cacher, DynamoCacher)
@@ -93,7 +93,6 @@ def xcon_test_config(xinject_test_context):
 def _setup_config_for_testing():
     # Get config object from current/new context:
     config = Config.grab()
-
 
     # We default to ONLY use 'EnvironmentalProvider'.
     # We tell it not to use a cacher or parent, not testing those aspects in this test.

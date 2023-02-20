@@ -90,7 +90,7 @@ class DynamoProvider(AwsProvider):
 
 
 class DynamoCacher(ProviderCacher):
-    """ Uses a Dynamo table called `global-configCache`.
+    """ Uses a Dynamo table called `global-all-configCache`.
 
         Generally caches what configuration values we lookup into a dynamo table.
         A good summary would be in the [Config Overview - Caching](../config.html#caching)
@@ -100,7 +100,7 @@ class DynamoCacher(ProviderCacher):
         The table has two keys:
 
         1. Hash key: Is the `environ` method parameter that gets passed to the methods on me.
-           It's normally a string in this format: `/{SERVICE_NAME}/{APP_ENV}`.
+           It's normally a string in this format: `/{APP_NAME}/{APP_ENV}`.
            Also, normally apps/services are only given access to one specific hash-key.
            This hash-key should represent the app and its current environment.
         2. Range/Sort key: Contains the variable name, providers and directory paths used
@@ -134,7 +134,7 @@ class DynamoCacher(ProviderCacher):
     @property
     def _table(self) -> _ConfigDynamoTable:
         # todo: make table name configurable
-        table = _ConfigDynamoTable(table_name='global-configCache', cache_table=True)
+        table = _ConfigDynamoTable(table_name='global-all-configCache', cache_table=True)
         table.append_source = " - via cacher"
         return table
 

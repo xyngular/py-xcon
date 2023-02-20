@@ -26,19 +26,6 @@ class XconSettings(_Settings):
     )
     """ Defaults to `APP_ENV` environment variable; otherwise will fallback to using 'all'. """
 
-    disable_default_cacher: bool = SettingsField(
-        name='XCON_DISABLE_DEFAULT_CACHER', retriever=_env_retriever, default_value=False
-    )
-    """ Defaults to `XCON_DISABLE_DEFAULT_CACHER` environment variable
-        (you can use 'True', 'T', 'False', 'F', 0, 1, 'Yes', 'Y', 'No', 'N'
-         and lower-case versions of any of these)
-
-         If environmental variable not set, Defaults to `False`.
-
-         If `True`: By default, the cacher will be disabled (can re-enable per-Config object
-         by setting it's `cacher` = `Default`.
-    """
-
     defaults: DirectoryListing
     """
     A blank DirectoryListing is created per-instance for this setting,
@@ -59,17 +46,34 @@ class XconSettings(_Settings):
     )
     """
     Default list of directories to use.
-    
+
     By default `{service}` will be replaced with `XconSettings.service`,
     (which by default will use `APP_NAME` environmental variable).
-    
+
     By default `{environment}` will be replaced with `XconSettings.environment`,
     (which by default will use `APP_ENV` environmental variable).
     """
 
-    # todo: rename without provider or somehwo indicate cacher is not used too?
-    env_only_provider: bool = SettingsField(
-        name='XCONF_ENV_ONLY_PROVIDER',
+    # XCON_INTERNAL_CACHE_EXPIRATION_MINUTES
+    internal_cache_expiration_minutes: int = SettingsField(
+        name='XCON_INTERNAL_CACHE_EXPIRATION_MINUTES',
+        retriever=_env_retriever,
+        default_value=False
+    )
+    """
+    Number of minutes to cache any values looked up and ached internally inside the providers.
+    After the expiration is reached, and if value is needed again will lookup info lazily on
+    demand.
+    
+    Keep in mind that if the dynamo cache is enabled and working that the dynamo cache table might
+    still have the value.
+    If it's still cached in the dynamo table then when the internal cache expires, will first look
+    at dynamo cache table for value (which is MUCH faster then querying each provider).
+    """
+
+    # todo: rename without provider or somehow indicate cacher is not used too?
+    only_env_provider: bool = SettingsField(
+        name='XCON_ONLY_ENV_PROVIDER',
         retriever=_env_retriever,
         default_value=False
     )
@@ -83,6 +87,19 @@ class XconSettings(_Settings):
     This is meant as more of a developer setting, for when a developer wants to ensure
     that while they run things locally it only checks environmental variables for all
     config values.
+    """
+
+    disable_default_cacher: bool = SettingsField(
+        name='XCON_DISABLE_DEFAULT_CACHER', retriever=_env_retriever, default_value=False
+    )
+    """ Defaults to `XCON_DISABLE_DEFAULT_CACHER` environment variable
+        (you can use 'True', 'T', 'False', 'F', 0, 1, 'Yes', 'Y', 'No', 'N'
+         and lower-case versions of any of these)
+
+         If environmental variable not set, Defaults to `False`.
+
+         If `True`: By default, the cacher will be disabled (can re-enable per-Config object
+         by setting it's `cacher` = `Default`.
     """
 
     providers: Sequence[Type[Provider]] = (

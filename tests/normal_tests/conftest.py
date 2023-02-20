@@ -40,7 +40,7 @@ def start_moto():
 @pytest.fixture(autouse=True)
 def dynamo_cache_table(start_moto):
     return dynamodb.create_table(
-        TableName='global-configCache',
+        TableName='global-all-configCache',
         KeySchema=[
             # Partition Key
             {'AttributeName': 'directory', 'KeyType': 'HASH'},

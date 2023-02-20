@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xcon"
-version = "1.6.0"
+version = "0.3.0"
 description = "Dynamic configuration retreiver."
 authors = ["Josh Orr <josh@orr.blue>"]
 

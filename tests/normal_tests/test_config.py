@@ -63,8 +63,8 @@ def test_env_only_env_var():
     assert type(config.resolved_cacher) == DynamoCacher
 
     try:
-        # Next, set XCONF_ENV_ONLY_PROVIDER and check conditions.
-        os.environ['XCONF_ENV_ONLY_PROVIDER'] = 'true'
+        # Next, set XCON_ONLY_ENV_PROVIDER and check conditions.
+        os.environ['XCON_ONLY_ENV_PROVIDER'] = 'true'
 
         # When using default providers, `EnvironmentalProvider` should be only one
         config.providers = [Default]
@@ -75,10 +75,10 @@ def test_env_only_env_var():
         assert_only_provider_used(EnvironmentalProvider)
 
         # Config still remembers the providers it's configured with,
-        # even if it does not use them with XCONF_ENV_ONLY_PROVIDER is enabled.
+        # even if it does not use them with XCON_ONLY_ENV_PROVIDER is enabled.
         assert list(config.providers) == [SecretsManagerProvider]
     finally:
-        del os.environ['XCONF_ENV_ONLY_PROVIDER']
+        del os.environ['XCON_ONLY_ENV_PROVIDER']
 
     # After environmental variable deleted, check to see if Config goes back to normal.
     assert_only_provider_used(SecretsManagerProvider)
@@ -117,15 +117,15 @@ def test_config_disable_via_env_var():
     assert isinstance(config.resolved_cacher, DynamoCacher)
 
     # Next, we set env-var and see if the cacher is disabled now.
-    with EnvironmentalProvider({'CONFIG_DISABLE_DEFAULT_CACHER': "True"}):
-        assert config.resolved_cacher is None
+    xcon_settings.disable_default_cacher = True
+    assert config.resolved_cacher is None
 
-        # Ensure when using an explict cacher, we use it regardless of env-var value.
-        with Config(cacher=DynamoCacher):
+    # Ensure when using an explict cacher, we use it regardless of env-var value.
+    with Config(cacher=DynamoCacher):
+        assert isinstance(config.resolved_cacher, DynamoCacher)
+        # ensure child config uses parent's config xcon_settings.
+        with Config():
             assert isinstance(config.resolved_cacher, DynamoCacher)
-            # ensure child config uses parent's config xcon_settings.
-            with Config():
-                assert isinstance(config.resolved_cacher, DynamoCacher)
 
 
 @moto.mock_dynamodb
@@ -527,7 +527,7 @@ def test_expire_internal_local_cache(directory: Directory):
     config.cacher = DynamoCacher
     assert config.get('exp_test_value') == 'expiringTestValue'
 
-    table = _ConfigDynamoTable(table_name='global-configCache', cache_table=True)
+    table = _ConfigDynamoTable(table_name='global-all-configCache', cache_table=True)
     table.delete_items(table.get_all_items())
     time.sleep(0.360)
 
@@ -557,7 +557,7 @@ def test_cache_uses_env_vars_by_default(directory: Directory):
     # Ensure we are working like we expect, we explicitly set service/environment directly on
     # config object; lets ensure it uses them and not the default values.
     assert config.get('exp_test_value_3') == 'expiringTestValue3'
-    table = _ConfigDynamoTable(table_name='global-configCache', cache_table=True)
+    table = _ConfigDynamoTable(table_name='global-all-configCache', cache_table=True)
     items = list(table.get_all_items())
 
     # See if what we stored in the cache table is what we expect.
@@ -620,7 +620,7 @@ def test_dynamo_cacher_retrieves_new_values_after_local_cache_expires(directory:
     config.cacher = DynamoCacher
     assert config.get('exp_test_value', ignore_local_caches=True) == 'expiringTestValue'
 
-    table = _ConfigDynamoTable(table_name='global-configCache', cache_table=True)
+    table = _ConfigDynamoTable(table_name='global-all-configCache', cache_table=True)
     table.delete_items(table.get_all_items())
 
     # Removed the external dynamo cacher items from its table, and see if we get the new value now

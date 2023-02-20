@@ -393,7 +393,7 @@ class DirectoryItem:
         This will be set for you if you provide only a `cache_concat_directory_paths`
         and `cache_concat_provider_names`. We will put them together with a `+` between them.
 
-        At some point we may create a global-configCacheV2 table and have better names on it.
+        At some point we may create a global-all-configCacheV2 table and have better names on it.
     """
     cache_concat_directory_paths: str = None
     cache_concat_provider_names: str = None
@@ -406,7 +406,7 @@ class DirectoryItem:
         This is mapped to dynamo-table.directory, and `DirectoryItem.directory` will be mapped
         to `dynamo-table.real_directory`.
 
-        At some point we may create a global-configCacheV2 table and have better names on it.
+        At some point we may create a global-all-configCacheV2 table and have better names on it.
     """
 
     from_cacher: bool = False

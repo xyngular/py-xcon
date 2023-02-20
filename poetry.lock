@@ -113,18 +113,18 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.26.69"
+version = "1.26.74"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.26.69-py3-none-any.whl", hash = "sha256:9a0a29179957cb26fa8c3c1fddf66b18efaeaf633e08db5fb53815ffb0421419"},
-    {file = "boto3-1.26.69.tar.gz", hash = "sha256:eb8cde24a4c5755c35126e8cd460e6b51c63d04292419e7e95721232720c7e5b"},
+    {file = "boto3-1.26.74-py3-none-any.whl", hash = "sha256:57f1696cbf5927180521ddabc37f10eb6650ccedc2b784dfb04502193bb65df9"},
+    {file = "boto3-1.26.74.tar.gz", hash = "sha256:a3cf126d18194e5d350ec46f99f1fff15beacdf091d1979e8471681688e14ba1"},
 ]
 
 [package.dependencies]
-botocore = ">=1.29.69,<1.30.0"
+botocore = ">=1.29.74,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -133,14 +133,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.26.69"
-description = "Type annotations for boto3 1.26.69 generated with mypy-boto3-builder 7.12.3"
+version = "1.26.74"
+description = "Type annotations for boto3 1.26.74 generated with mypy-boto3-builder 7.12.3"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "boto3-stubs-1.26.69.tar.gz", hash = "sha256:94edd1d802fb57e5265300b11760619ab1ba1f1aef3aa3f43ca0ca0399855ee8"},
-    {file = "boto3_stubs-1.26.69-py3-none-any.whl", hash = "sha256:b8cbdd22bea8024a1c94b16f2d1e7d0e99b83d36503ae2674dfcc752492b6847"},
+    {file = "boto3-stubs-1.26.74.tar.gz", hash = "sha256:3880e92dba58d11edc2e522f0a026343f42f45c2621ede88a0edb8025caddd22"},
+    {file = "boto3_stubs-1.26.74-py3-none-any.whl", hash = "sha256:39e16364db0471c8a10ec597ed767eacf6436b8c19d7adea851559d4c15fbc63"},
 ]
 
 [package.dependencies]
@@ -190,7 +190,7 @@ backup-gateway = ["mypy-boto3-backup-gateway (>=1.26.0,<1.27.0)"]
 backupstorage = ["mypy-boto3-backupstorage (>=1.26.0,<1.27.0)"]
 batch = ["mypy-boto3-batch (>=1.26.0,<1.27.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.26.0,<1.27.0)"]
-boto3 = ["boto3 (==1.26.69)", "botocore (==1.29.69)"]
+boto3 = ["boto3 (==1.26.74)", "botocore (==1.29.74)"]
 braket = ["mypy-boto3-braket (>=1.26.0,<1.27.0)"]
 budgets = ["mypy-boto3-budgets (>=1.26.0,<1.27.0)"]
 ce = ["mypy-boto3-ce (>=1.26.0,<1.27.0)"]
@@ -501,14 +501,14 @@ xray = ["mypy-boto3-xray (>=1.26.0,<1.27.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.69"
+version = "1.29.74"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.69-py3-none-any.whl", hash = "sha256:2a4ab8bcb3177daa425019e125c09996b9a6a1a62bb0baaaeeb86ffd552719cc"},
-    {file = "botocore-1.29.69.tar.gz", hash = "sha256:7e1bebca013544fbc298cb58603bfccd5f71b49c720a5c33c07cf5dfc8145a1f"},
+    {file = "botocore-1.29.74-py3-none-any.whl", hash = "sha256:cb1e1a584c0bea3b1bcf39710eb7b2e58add56945598d95356bf9f6d4cc8b6ae"},
+    {file = "botocore-1.29.74.tar.gz", hash = "sha256:bf1515908c8ffdffa249e112fd9bbb54d919ce8fb5ee88baf9c198dda6172fd5"},
 ]
 
 [package.dependencies]
@@ -521,14 +521,14 @@ crt = ["awscrt (==0.16.9)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.29.69"
+version = "1.29.74"
 description = "Type annotations and code completion for botocore"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "botocore_stubs-1.29.69-py3-none-any.whl", hash = "sha256:15a5160119909788a5f346db12853f6675705d9856360fed8474c45ea4f9e018"},
-    {file = "botocore_stubs-1.29.69.tar.gz", hash = "sha256:cff293f3d5418110be4966ecc58a86146cc1e000984e2ea34350f9ef8ef88dd8"},
+    {file = "botocore_stubs-1.29.74-py3-none-any.whl", hash = "sha256:d75329e6740c61a056bff7dd63b3cf7c02409195cdbcc6c45b03d06dd95925b1"},
+    {file = "botocore_stubs-1.29.74.tar.gz", hash = "sha256:9aea23874038a2cb469f320f5018845bc4143cce82e0c1eee98a2973981fc373"},
 ]
 
 [package.dependencies]
@@ -924,14 +924,14 @@ smmap = ">=3.0.1,<6"
 
 [[package]]
 name = "gitpython"
-version = "3.1.30"
-description = "GitPython is a python library used to interact with Git repositories"
+version = "3.1.31"
+description = "GitPython is a Python library used to interact with Git repositories"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "GitPython-3.1.30-py3-none-any.whl", hash = "sha256:cd455b0000615c60e286208ba540271af9fe531fa6a87cc590a7298785ab2882"},
-    {file = "GitPython-3.1.30.tar.gz", hash = "sha256:769c2d83e13f5d938b7688479da374c4e3d49f71549aaf462b646db9602ea6f8"},
+    {file = "GitPython-3.1.31-py3-none-any.whl", hash = "sha256:f04893614f6aa713a60cbbe1e6a97403ef633103cdd0ef5eb6efe0deb98dbe8d"},
+    {file = "GitPython-3.1.31.tar.gz", hash = "sha256:8ce3bcf69adfdf7c7d503e78fd3b1c492af782d58893b650adb2ac8912ddd573"},
 ]
 
 [package.dependencies]
@@ -939,14 +939,14 @@ gitdb = ">=4.0.1,<5"
 
 [[package]]
 name = "griffe"
-version = "0.25.4"
+version = "0.25.5"
 description = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "griffe-0.25.4-py3-none-any.whl", hash = "sha256:919f935a358b31074d16e324e26b041883c60a8cf10504655e394afc3a7caad8"},
-    {file = "griffe-0.25.4.tar.gz", hash = "sha256:f190edf8ef58d43c856d2d6761ec324a043ff60deb8c14359263571e8b91fe68"},
+    {file = "griffe-0.25.5-py3-none-any.whl", hash = "sha256:1fb9edff48e66d4873014a2ebf21aca5f271d0006a4c937826e3cf592ffb3706"},
+    {file = "griffe-0.25.5.tar.gz", hash = "sha256:11ea3403ef0560a1cbcf7f302eb5d21cf4c1d8ed3f8a16a75aa9f6f458caf3f1"},
 ]
 
 [package.dependencies]
@@ -1315,14 +1315,14 @@ mkdocs = ">=0.17"
 
 [[package]]
 name = "mkdocs-material"
-version = "9.0.12"
+version = "9.0.13"
 description = "Documentation that simply works"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "mkdocs_material-9.0.12-py3-none-any.whl", hash = "sha256:ff4233e4f4da0c879db0dbcb532a690a3f86f5a66a0cfcce99a124e82a462afb"},
-    {file = "mkdocs_material-9.0.12.tar.gz", hash = "sha256:4da07b1390c6b78844f1566d723dd045572e645f31b108a1b5062fa7d11aa241"},
+    {file = "mkdocs_material-9.0.13-py3-none-any.whl", hash = "sha256:06e51eba6a090de070a3489890cf1e491d52c04c6ff2b06dd4586c6cdd974a3f"},
+    {file = "mkdocs_material-9.0.13.tar.gz", hash = "sha256:a62696610899d01df091b4d5ad23f9811f878a1f34307d7cea677baf4854c84f"},
 ]
 
 [package.dependencies]
@@ -1392,14 +1392,14 @@ mkdocstrings = ">=0.19"
 
 [[package]]
 name = "moto"
-version = "4.1.2"
+version = "4.1.3"
 description = ""
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "moto-4.1.2-py2.py3-none-any.whl", hash = "sha256:1b361ece638c74a657325378a259276f368aafce2f8be84f8143e69fa93ce8ec"},
-    {file = "moto-4.1.2.tar.gz", hash = "sha256:63431733d2a02c7bd652ad71ec1da442a0e0d580cbac5eeb50d440a2ce066eac"},
+    {file = "moto-4.1.3-py2.py3-none-any.whl", hash = "sha256:dcd1d06662982cf3c94f36d6348251ccdcf62a1c5de5650425cb4e6f260ae7a0"},
+    {file = "moto-4.1.3.tar.gz", hash = "sha256:c8200ccaa9440c2e9daa0bd5e0bd768a719db5a2c82ea8d782f0e3fa09a3c5e2"},
 ]
 
 [package.dependencies]
@@ -1470,14 +1470,14 @@ typing-extensions = ">=4.1.0"
 
 [[package]]
 name = "mypy-boto3-ec2"
-version = "1.26.69"
-description = "Type annotations for boto3.EC2 1.26.69 service generated with mypy-boto3-builder 7.12.3"
+version = "1.26.71"
+description = "Type annotations for boto3.EC2 1.26.71 service generated with mypy-boto3-builder 7.12.3"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "mypy-boto3-ec2-1.26.69.tar.gz", hash = "sha256:ecd046b11c7dbd8ada82eb1477d0b8fc4a38fa01bb72ac6895408ea916064a5f"},
-    {file = "mypy_boto3_ec2-1.26.69-py3-none-any.whl", hash = "sha256:d568d711fbca8ef044b22267bb1e8be7803697900284ee1c964faa91039ab2c1"},
+    {file = "mypy-boto3-ec2-1.26.71.tar.gz", hash = "sha256:6c09a7266d95de7550a167198a97dbd8ba718704baeb32f0c890655fa48961c5"},
+    {file = "mypy_boto3_ec2-1.26.71-py3-none-any.whl", hash = "sha256:7e0cacc48e5a4340df8db5878324cf128012234f58f798be2fe5febb53e312b9"},
 ]
 
 [package.dependencies]
@@ -1500,14 +1500,14 @@ typing-extensions = ">=4.1.0"
 
 [[package]]
 name = "mypy-boto3-rds"
-version = "1.26.47"
-description = "Type annotations for boto3.RDS 1.26.47 service generated with mypy-boto3-builder 7.12.2"
+version = "1.26.72"
+description = "Type annotations for boto3.RDS 1.26.72 service generated with mypy-boto3-builder 7.12.3"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "mypy-boto3-rds-1.26.47.tar.gz", hash = "sha256:66224030b9cb7945f0fc5a164dbfbf8b748a4a1e859344309b59f7e3fd36a170"},
-    {file = "mypy_boto3_rds-1.26.47-py3-none-any.whl", hash = "sha256:a4f193687b0ad3de72e8513490e4df3b55f84b34f101b5916e3a7155300b2529"},
+    {file = "mypy-boto3-rds-1.26.72.tar.gz", hash = "sha256:2cda6425e279e8d1e802c77b059e1fd183ff9fcd65e5482bf7cb43aab1c42aad"},
+    {file = "mypy_boto3_rds-1.26.72-py3-none-any.whl", hash = "sha256:edd0b70740f6460a72ecd27e64227f6f1b216fe04c852f6585c67bc51a0e6e2c"},
 ]
 
 [package.dependencies]
@@ -2191,14 +2191,14 @@ test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
 name = "types-awscrt"
-version = "0.16.4"
+version = "0.16.10"
 description = "Type annotations and code completion for awscrt"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "types_awscrt-0.16.4-py3-none-any.whl", hash = "sha256:6ab83403d9c41f09219d4b00bd7dca0fe6eb174999739a4fa71dbba1033fd9dc"},
-    {file = "types_awscrt-0.16.4.tar.gz", hash = "sha256:fa1a13f544e31d118c92b4e960528ac8b9bcf7ff36b5c402d07f0c423b618896"},
+    {file = "types_awscrt-0.16.10-py3-none-any.whl", hash = "sha256:35e27f667e882ef7d02f1829499df30c0881d4c3ba12ff698c796b79e87ce09e"},
+    {file = "types_awscrt-0.16.10.tar.gz", hash = "sha256:8df494aff24bdce188381304d6e762b797e2e3e67f610dcb7c2a3725f08cbf67"},
 ]
 
 [[package]]
@@ -2218,26 +2218,26 @@ types-awscrt = "*"
 
 [[package]]
 name = "types-toml"
-version = "0.10.8.3"
+version = "0.10.8.4"
 description = "Typing stubs for toml"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-toml-0.10.8.3.tar.gz", hash = "sha256:f37244eff4cd7eace9cb70d0bac54d3eba77973aa4ef26c271ac3d1c6503a48e"},
-    {file = "types_toml-0.10.8.3-py3-none-any.whl", hash = "sha256:a2286a053aea6ab6ff814659272b1d4a05d86a1dd52b807a87b23511993b46c5"},
+    {file = "types-toml-0.10.8.4.tar.gz", hash = "sha256:c8748dd225b28eb80ce712e2d7d61b57599815e7b48d07ef53df51ed148fa6b1"},
+    {file = "types_toml-0.10.8.4-py3-none-any.whl", hash = "sha256:306b1bb8b5bbc5f1b60387dbcc4b489e79f8490ce20e93af5f422a68b470d94b"},
 ]
 
 [[package]]
 name = "typing-extensions"
-version = "4.4.0"
+version = "4.5.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
-    {file = "typing_extensions-4.4.0.tar.gz", hash = "sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa"},
+    {file = "typing_extensions-4.5.0-py3-none-any.whl", hash = "sha256:fb33085c39dd998ac16d1431ebc293a8b3eedd00fd4a32de0ff79002c19511b4"},
+    {file = "typing_extensions-4.5.0.tar.gz", hash = "sha256:5cb5f4a79139d699607b3ef622a1dedafa84e115ab0024e0d9c044a9479ca7cb"},
 ]
 
 [[package]]
@@ -2343,14 +2343,14 @@ files = [
 
 [[package]]
 name = "werkzeug"
-version = "2.2.2"
+version = "2.2.3"
 description = "The comprehensive WSGI web application library."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "Werkzeug-2.2.2-py3-none-any.whl", hash = "sha256:f979ab81f58d7318e064e99c4506445d60135ac5cd2e177a2de0089bfd4c9bd5"},
-    {file = "Werkzeug-2.2.2.tar.gz", hash = "sha256:7ea2d48322cc7c0f8b3a215ed73eabd7b5d75d0b50e31ab006286ccff9e00b8f"},
+    {file = "Werkzeug-2.2.3-py3-none-any.whl", hash = "sha256:56433961bc1f12533306c624f3be5e744389ac61d722175d543e1751285da612"},
+    {file = "Werkzeug-2.2.3.tar.gz", hash = "sha256:2e1ccc9417d4da358b9de6f174e3ac094391ea1d4fbef2d667865d819dfd0afe"},
 ]
 
 [package.dependencies]
@@ -2391,14 +2391,14 @@ xsentinels = ">=1.2.1,<2.0.0"
 
 [[package]]
 name = "xinject"
-version = "1.3.0"
+version = "1.4.0"
 description = "Lazy dependency injection."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "xinject-1.3.0-py3-none-any.whl", hash = "sha256:0bfa9cc712040828a63f533521100d9b24410da3e8017d81513927ccfbeac8b0"},
-    {file = "xinject-1.3.0.tar.gz", hash = "sha256:b7bbf7df11256d2c03700fdeb1490c2b287006f63728f181141029a865e257cb"},
+    {file = "xinject-1.4.0-py3-none-any.whl", hash = "sha256:701f8a61eaf5c2dd76c8bc913bddb0d6f6779c7f0fd04e3aa7c82c35752657c5"},
+    {file = "xinject-1.4.0.tar.gz", hash = "sha256:1902ba20ab9642f65c61ffbdb892a255dc9da6d1b7a2433de3e1e536e8bea8bf"},
 ]
 
 [package.dependencies]
@@ -2445,18 +2445,20 @@ typing-inspect = ">=0,<1"
 
 [[package]]
 name = "xsettings"
-version = "1.0.0"
+version = "1.1.1"
 description = "Ways to document, centeralize, retreive and validate settings."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "xsettings-1.0.0-py3-none-any.whl", hash = "sha256:a53c5b37c2e46f0141f4ba89702ae2bbf0cde58c65134c9d937acbb99b0b803c"},
-    {file = "xsettings-1.0.0.tar.gz", hash = "sha256:0ac09633382403f1d194e871626fa4c5df20c7f0b3decac2915ecf7fe642d5a7"},
+    {file = "xsettings-1.1.1-py3-none-any.whl", hash = "sha256:59e2309ee3b111b619c59baaecd29f7598c4a4daf055380b8e1502d1cc91743d"},
+    {file = "xsettings-1.1.1.tar.gz", hash = "sha256:61bab829b528c68820c3c2a9ce80934bbeaac5e087e4fca9e76ec345524d80f4"},
 ]
 
 [package.dependencies]
 ciso8601 = ">=2.3.0,<3.0.0"
+mkdocs-autorefs = ">=0.4.1,<0.5.0"
+mkdocstrings = ">=0.20.0,<0.21.0"
 xbool = ">=1.0.0,<2.0.0"
 xinject = ">=1.2.0,<2.0.0"
 xloop = ">=1.0.1,<2.0.0"
@@ -2464,14 +2466,14 @@ xsentinels = ">=1.2.0,<2.0.0"
 
 [[package]]
 name = "zipp"
-version = "3.13.0"
+version = "3.14.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "zipp-3.13.0-py3-none-any.whl", hash = "sha256:e8b2a36ea17df80ffe9e2c4fda3f693c3dad6df1697d3cd3af232db680950b0b"},
-    {file = "zipp-3.13.0.tar.gz", hash = "sha256:23f70e964bc11a34cef175bc90ba2914e1e4545ea1e3e2f67c079671883f9cb6"},
+    {file = "zipp-3.14.0-py3-none-any.whl", hash = "sha256:188834565033387710d046e3fe96acfc9b5e86cbca7f39ff69cf21a4128198b7"},
+    {file = "zipp-3.14.0.tar.gz", hash = "sha256:9e5421e176ef5ab4c0ad896624e87a7b2f07aca746c9b2aa305952800cb8eecb"},
 ]
 
 [package.extras]

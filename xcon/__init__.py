@@ -36,13 +36,6 @@ Go to [How To Use](#how-to-use) for more details on how to use this library.
 
 - `xcon.config.ConfigSettings`: Used in projects to create a 'ConfigSettings' subclass.
     The subclass would allow you easily specify project xcon_settings to lazily lookup via Config.
-
-# How To Use
-
-..include:: ../Readme.md
-    :start-after: # How To Use
-
-
 """
 from .config import Config
 from . import providers

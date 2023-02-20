@@ -4,7 +4,7 @@
 #
 # The dynamo hash-key is the app/service + stage name (ie: `/${self:service}/${self:provider.stage}`)
 
-# Allow config library in xynlib and new py-xyn-config to read SSM/Secrets Manager and Dynamo values
+# Allow config library in xynlib and new py-xcon to read SSM/Secrets Manager and Dynamo values
 Resources:
   xconCacheTableAppPolicy:
     Type: "AWS::IAM::Policy"
@@ -35,7 +35,7 @@ Resources:
                   - - "arn:aws:dynamodb"
                     - Ref: "AWS::Region"
                     - Ref: "AWS::AccountId"
-                    - "table/global-configCache"
+                    - "table/global-all-configCache"
             Condition:
               ForAllValues:StringEquals:
                 dynamodb:LeadingKeys:
