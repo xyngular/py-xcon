@@ -64,7 +64,7 @@ class XconSettings(_Settings):
     Number of minutes to cache any values looked up and ached internally inside the providers.
     After the expiration is reached, and if value is needed again will lookup info lazily on
     demand.
-    
+
     Keep in mind that if the dynamo cache is enabled and working that the dynamo cache table might
     still have the value.
     If it's still cached in the dynamo table then when the internal cache expires, will first look
