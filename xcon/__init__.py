@@ -43,11 +43,4 @@ from .config import config
 from .config import ConfigSettings
 from .conf import xcon_settings
 
-from zsetup import setup
-
 __version__ = '0.1.0'
-
-setup(
-    app_main_module_file=__file__, app_version=__version__,
-    app_name='configManagerExperimentalTest'
-)
