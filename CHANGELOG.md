@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/xyngular/py-xcon/compare/v0.3.2...v0.3.3) (2023-02-21)
+
+
+### Bug Fixes
+
+* move dev-only dependencies to correct group. ([0830fec](https://github.com/xyngular/py-xcon/commit/0830fece38c3964a772b3cd93a5d02c21a5565a7))
+
 ## [0.3.2](https://github.com/xyngular/py-xcon/compare/v0.3.1...v0.3.2) (2023-02-20)
 
 
