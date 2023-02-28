@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/xyngular/py-xcon/compare/v0.3.3...v0.4.0) (2023-02-28)
+
+
+### Features
+
+* ignore if cache table does not exist (emit warning instead). ([9ae7731](https://github.com/xyngular/py-xcon/commit/9ae773187090619b590d235812a52986607302a6))
+
+
+### Bug Fixes
+
+* default ssm serverless permissions. ([96f7e23](https://github.com/xyngular/py-xcon/commit/96f7e237c55f5d3eda17afa62d1a7f405b9b7231))
+
 ## [0.3.3](https://github.com/xyngular/py-xcon/compare/v0.3.2...v0.3.3) (2023-02-21)
 
 
