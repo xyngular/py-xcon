@@ -1,7 +1,6 @@
 import logging
 
 from botocore import exceptions
-
 from ..directory import Directory
 from ..provider import AwsProvider
 
@@ -10,7 +9,7 @@ log = logging.getLogger(__name__)
 aws_error_classes_to_ignore = {
     # If no aws credentials were found.
     exceptions.NoCredentialsError,
-    exceptions.NoRegionError
+    exceptions.NoRegionError,
 }
 
 aws_error_codes_to_ignore = {
@@ -20,6 +19,10 @@ aws_error_codes_to_ignore = {
     # Not sure if I want to include these?
     'InvalidSignatureException',  # Probably aws access_key is wrong.
     'UnrecognizedClientException'  # When security token is invalid [probably wrong aws key_id].
+    'ExpiredTokenException',  # When temporary creds are expired (from sso creds)
+
+    # Example: If dynamo cache table does not exist; we want to ignore it and just move on...
+    'ResourceNotFoundException'
 }
 """ List of error codes from boto to ignore. We log a warning, but continue on. """
 
