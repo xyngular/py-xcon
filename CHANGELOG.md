@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.1](https://github.com/xyngular/py-xcon/compare/v0.4.0...v0.4.1) (2023-04-15)
+
+
+### Bug Fixes
+
+* docs ([3d5dae9](https://github.com/xyngular/py-xcon/commit/3d5dae9cd21770370f6661df7901f8d74477247e))
+* pypi license reference. ([7d11803](https://github.com/xyngular/py-xcon/commit/7d11803b82df183b0402fb064dd5efb2f3ede783))
+* serverless permission file examples. ([435ea6f](https://github.com/xyngular/py-xcon/commit/435ea6feffdf260dd6e2163fe6f4bbf6a20d6529))
+
 ## [0.4.0](https://github.com/xyngular/py-xcon/compare/v0.3.3...v0.4.0) (2023-02-28)
 
 
