@@ -40,6 +40,6 @@ Resources:
               ForAllValues:StringEquals:
                 dynamodb:LeadingKeys:
                   - "/${self:service}/${self:provider.stage}"
-                  - "/${self:service}"
+                  - "/${self:service}/all"
                   - "/global/${self:provider.stage}"
-                  - "/global"
+                  - "/global/all"
