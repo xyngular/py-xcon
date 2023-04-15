@@ -5,7 +5,6 @@ description = "Dynamic configuration retreiver."
 authors = ["Josh Orr <josh@orr.blue>"]
 packages = [{include = "xcon"}]
 readme = "Readme.md"
-license = "The Unlicense (Unlicense)"
 repository = "https://github.com/xyngular/py-xsettings"
 keywords = ["settings", "configuration", "lazy", "boto", "aws", "secrets manager", "param store", "ssm"]
 classifiers = [
