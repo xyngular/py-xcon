@@ -18,7 +18,7 @@ at the various directory-levels that are checked.
 
 **More documentation and testing will be coming soon, for a full 1.0.0 release sometime in the next month or so.**
 
-See **[xsettings docs](https://xyngular.github.io/py-xcon/latest/)**.
+See **[xcon docs](https://xyngular.github.io/py-xcon/latest/)**.
 
 # Documentation
 
