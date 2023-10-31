@@ -17,12 +17,12 @@ title: Detailed Overview
     Thank you for your support while the code base transitions to being open-source!
 
 
-# Overview
+## Overview
 
 xcon's goal as a library is to simplify/abstract configuration lookup for our various
 processors and services.
 
-## Historical Background
+### Historical Background
 
 When we first started trying to get configuration from SSM dynamically,
 we ran into a few issues.
@@ -42,7 +42,7 @@ We decided back then to write up a Config class to solve all these issues.
 We were able to speed up the queries to the services, and cache things to help prevent throttling,
 and cache the results in dynamo to make it even faster and more resilient against throttling.
 
-## Summary
+### Summary
 
 We have a few basic/general concepts in xcon that you should be familiar with
 when working with the library.
@@ -124,7 +124,7 @@ followed by a link to more details.
     - For details see [Caching](#caching)
 
 
-## Service/Environment Names {#service-environment-names}
+### Service/Environment Names {#service-environment-names}
 
 There are two special variables that `xcon.config.Config` treats special:
 
@@ -150,7 +150,7 @@ There are two special variables that `xcon.config.Config` treats special:
 
 ???+ important "For these two ^ special values, [`Config`](../api/xcon/config.html#xcon.config.Config){target=_blank} skips the normal [Provider Chain][provider-chain]."
 
-### Search Order
+#### Search Order
 
 Config will only look in these locations for the special variables
 `Config.SERVICE_NAME` and `Config.APP_ENV`:
@@ -163,7 +163,7 @@ Config will only look in these locations for the special variables
       environmental variables (all other config values would not).
 3. [Defaults] last (including any defaults in the [Parent Chain][parent-chain]).
 
-## Quick Examples
+### Quick Examples
 [quick-start]: #quick-start
 
 Let's start with a very simple example:
@@ -187,7 +187,7 @@ ready-to-use `xcon.config.Config` as a resource (`xinject.dependency.Dependency`
 So you can just import this special `xcon.config.config` variable to easily always
 use current `xcon.config.Config.current` resource.
 
-## Naming Guidelines
+### Naming Guidelines
 
 - `Config.SERVICE_NAME` and `Config.APP_ENV` values should be named with no spaces but using
   `camelCase` to separate any words.
@@ -209,7 +209,7 @@ use current `xcon.config.Config.current` resource.
     - The service name and env name that make up the `xcon.directory.Directory.path`
       is case-sensitive. But the part after that for the config name is **NOT**.
 
-## Standard Lookup Order
+### Standard Lookup Order
 
 By Default, Config will look at the following locations by default
 (see [Provider Chain][provider-chain] for details):
@@ -274,7 +274,7 @@ config.set_default("service_name", "someServiceName")
 
 By default, [overrides] and [defaults] are inherited from the [Parent Chain][parent-chain].
 
-## Exports
+### Exports
 
 ???+ note "This is something we have not really utilized yet"
     Config supports it, but we don't really use this feature anywhere currently.
