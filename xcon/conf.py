@@ -111,7 +111,7 @@ class XconSettings(_Settings):
     )
     """
     Default list of providers to use, in the order to try them in.
-    
+
     When pytest (unit testing) is running, this is altered to only have
     `xcon.providers.environmental.EnvironmentalProvider` listed.
     """
