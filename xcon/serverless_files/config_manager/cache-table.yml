@@ -16,14 +16,14 @@
 # were used to originally look up the config-value, that way the cache will accurately reflect config values no
 # mater how they were looked up dynamically at run-time.
 #
-# For the table name, for looks for param `xconConfigCacheTableName`, if not found then uses `account-all-configCache`,
+# For the table name, for looks for param `xconConfigCacheTableName`, if not found then uses `global-all-configCache`,
 # ('account-all', as in aws account-wide config cache table, for all stages/environments)
 
 Resources:
   xconConfigCacheTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ${param:xconConfigCacheTableName, 'account-all-configCache'}
+      TableName: ${param:xconConfigCacheTableName, 'global-all-configCache'}
       AttributeDefinitions:
         - AttributeName: app_key  # Used to be `directory`...
           AttributeType: S

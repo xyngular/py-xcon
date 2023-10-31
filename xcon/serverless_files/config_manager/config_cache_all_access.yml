@@ -29,4 +29,4 @@ Resources:
                   - - "arn:aws:dynamodb"
                     - Ref: "AWS::Region"
                     - Ref: "AWS::AccountId"
-                    - "table/${param:xconConfigCacheTableName, 'account-all-configCache'}"
+                    - "table/${param:xconConfigCacheTableName, 'global-all-configCache'}"

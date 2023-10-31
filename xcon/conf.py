@@ -83,10 +83,11 @@ class XconSettings(_Settings):
     If `True`: No matter how the providers are configured, it will only check environmental
     variables for config values; ie: the only provider used is
     `xcon.providers.environmental.EnvironmentalProvider`.
+    The cacher is also disabled and not used.
 
     This is meant as more of a developer setting, for when a developer wants to ensure
     that while they run things locally it only checks environmental variables for all
-    config values.
+    config values (ie: it won't make any external calls to lookup configuration).
     """
 
     disable_default_cacher: bool = SettingsField(
@@ -94,12 +95,13 @@ class XconSettings(_Settings):
     )
     """ Defaults to `XCON_DISABLE_DEFAULT_CACHER` environment variable
         (you can use 'True', 'T', 'False', 'F', 0, 1, 'Yes', 'Y', 'No', 'N'
-         and lower-case versions of any of these)
+         and lower-case versions of any of these).
 
          If environmental variable not set, Defaults to `False`.
 
-         If `True`: By default, the cacher will be disabled (can re-enable per-Config object
-         by setting it's `cacher` = `Default`.
+         If `True`: By default, the cacher will be disabled
+         (can re-enable per-Config object by explicitly setting it's
+          `cacher` = `xcon.providers.dynamo.DynamoCacher`).
     """
 
     providers: Sequence[Type[Provider]] = (
@@ -107,6 +109,12 @@ class XconSettings(_Settings):
         providers.SsmParamStoreProvider,
         providers.SecretsManagerProvider
     )
+    """
+    Default list of providers to use, in the order to try them in.
+    
+    When pytest (unit testing) is running, this is altered to only have
+    `xcon.providers.environmental.EnvironmentalProvider` listed.
+    """
 
 
 xcon_settings = XconSettings.proxy()

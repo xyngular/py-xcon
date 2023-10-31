@@ -511,16 +511,11 @@ class Config(Dependency):
         via this syntax:
 
         >>> from xcon.config import config
-        >>> config.SOME_OVERRIDE_NAME = "my override value"
-
-
-        .. warning:: When doing it this way the first-char in the name must be upper-case.
-
-        When using `set_override` you can use whatever case you want.
+        >>> config['some_override_name'] = "my override value"
 
         For details see [Naming Rules](#naming-rules).
 
-        .. important:: This will also effect child config objects!
+        .. important:: This will also affect child config objects!
             They will look for overrides set on a parent before looking at any providers.
 
             For more details see [Parent Chain](#parent-chain) and [Overrides](#overrides) topics.

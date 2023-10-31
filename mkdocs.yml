@@ -6,6 +6,7 @@ dev_addr: 127.0.0.1:7000
 nav:
   - xcon:
     - index.md
+    - detailed_overview.md
   - API Reference: api/xcon/" target="_blank
   - Changelog: changelog.md
 
