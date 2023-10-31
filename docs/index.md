@@ -196,7 +196,7 @@ For each directory/path, we go through these providers (second):
     - [Provider Chain](detailed_overview.md#provider-chain)
     - [Supported Providers](detailed_overview.md#supported-providers)
 
-** TODO In the order they are specified above (see [Standard Lookup Order](detailed_overview.md#standard-lookup-order)).
+In the order they are specified above (see [Standard Lookup Order](detailed_overview.md#standard-lookup-order)).
 
 ### Param Store Provider Specifics
 
@@ -243,7 +243,7 @@ If you want to use a dynamo table cache (see [caching](#caching) in next section
     - [App Permissions](https://github.com/xyngular/py-xcon/blob/main/xcon/serverless_files/config_manager/cache-table.yml)
     - [Table Definition](https://github.com/xyngular/py-xcon/blob/main/xcon/serverless_files/cache-permissions.yml)
 
-***TODO For more details, see [Add Permissions](#add-permissions).
+For more details, see [Permissions](detailed_overview.md#permissions).
 
 
 ## Caching
