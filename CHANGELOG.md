@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.4.1](https://github.com/xyngular/py-xcon/compare/v0.4.0...v0.4.1) (2023-04-15)
+
+
+### Bug Fixes
+
+* docs ([3d5dae9](https://github.com/xyngular/py-xcon/commit/3d5dae9cd21770370f6661df7901f8d74477247e))
+* pypi license reference. ([7d11803](https://github.com/xyngular/py-xcon/commit/7d11803b82df183b0402fb064dd5efb2f3ede783))
+* serverless permission file examples. ([435ea6f](https://github.com/xyngular/py-xcon/commit/435ea6feffdf260dd6e2163fe6f4bbf6a20d6529))
+
+## [0.4.0](https://github.com/xyngular/py-xcon/compare/v0.3.3...v0.4.0) (2023-02-28)
+
+
+### Features
+
+* ignore if cache table does not exist (emit warning instead). ([9ae7731](https://github.com/xyngular/py-xcon/commit/9ae773187090619b590d235812a52986607302a6))
+
+
+### Bug Fixes
+
+* default ssm serverless permissions. ([96f7e23](https://github.com/xyngular/py-xcon/commit/96f7e237c55f5d3eda17afa62d1a7f405b9b7231))
+
+## [0.3.3](https://github.com/xyngular/py-xcon/compare/v0.3.2...v0.3.3) (2023-02-21)
+
+
+### Bug Fixes
+
+* move dev-only dependencies to correct group. ([0830fec](https://github.com/xyngular/py-xcon/commit/0830fece38c3964a772b3cd93a5d02c21a5565a7))
+
 ## [0.3.2](https://github.com/xyngular/py-xcon/compare/v0.3.1...v0.3.2) (2023-02-20)
 
 
