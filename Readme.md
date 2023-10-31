@@ -3,8 +3,19 @@
 
 - [Introduction](#introduction)
 - [Documentation](#documentation)
-- [Install](#install)
 - [Quick Start](#quick-start)
+    * [Install](#install)
+    * [Using It](#using-it)
+- [Quick Overview](#quick-overview)
+    * [Places Configuration is Retrieved From](#places-configuration-is-retrieved-from)
+        + [Param Store Provider Specifics](#param-store-provider-specifics)
+        + [Secrets Manager Provider Specifics](#secrets-manager-provider-specifics)
+    * [Case Sensitivity](#case-sensitivity)
+    * [Add Permissions](#add-permissions)
+    * [Caching](#caching)
+        + [Time to live](#time-to-live)
+        + [Table Layout Details](#table-layout-details)
+    * [Unit Tests](#unit-tests)
 - [Licensing](#licensing)
 
 # Introduction
