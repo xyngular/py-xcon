@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/xyngular/py-xcon/compare/v0.5.0...v0.6.0) (2023-10-31)
+
+
+### Features
+
+* update table of contents for readme. ([7cf59f5](https://github.com/xyngular/py-xcon/commit/7cf59f527773754e803f9f5d086c7060dc9b26aa))
+
+
+### Bug Fixes
+
+* documentation links. ([69f6a3a](https://github.com/xyngular/py-xcon/commit/69f6a3ab29f2a04851e34645ea6147eb40f6d4e6))
+
 ## [0.5.0](https://github.com/xyngular/py-xcon/compare/v0.4.1...v0.5.0) (2023-10-31)
 
 
