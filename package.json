@@ -1,0 +1,42 @@
+{
+  "name": "@xyngular/config-manager",
+  "version": "1.2.4",
+  "description": "Config Manager",
+  "repository": "git@github.com:xyngular/config-manager.git",
+  "author": "Xyngular, LLC",
+  "license": "Xyngular",
+  "private": true,
+  "scripts": {
+    "test": "poetry run pytest",
+    "start": "poetry run uvicorn config_manager.main:app --reload",
+    "prepare": "husky install"
+  },
+  "scriptsDescription": {
+    "test": "Run unit tests",
+    "start": "Start service for local development with offline api"
+  },
+  "repoman": {
+    "projectType": "pyserverless",
+    "project": "config_manager",
+    "sourcedir": "config_manager",
+    "defaultEntrypoint": "'[\"config-manager\"]'",
+    "containerName": "xyngular/config-manager",
+    "version": "1.29.3",
+    "pythonVersion": "3.9"
+  },
+  "devDependencies": {
+    "husky": "^8.0.1",
+    "serverless": "^3.2.1",
+    "serverless-plugin-datadog": "^5.0.0",
+    "serverless-python-requirements": "^5.3.1"
+  },
+  "resolutions": {
+    "ansi-regex": "^5.0.1",
+    "nanoid": "^3.1.31"
+  },
+  "dependencies": {
+    "nanoid": "^3.1.31",
+    "serverless-cloudformation-sub-variables": "^0.2.1",
+    "serverless-scriptable-plugin": "^1.2.2"
+  }
+}

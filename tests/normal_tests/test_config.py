@@ -60,7 +60,7 @@ def test_env_only_env_var():
     config.cacher = Default
 
     assert_only_provider_used(SsmParamStoreProvider)
-    assert type(config.resolved_cacher) == DynamoCacher
+    assert type(config.resolved_cacher) is DynamoCacher
 
     try:
         # Next, set XCON_ONLY_ENV_PROVIDER and check conditions.
@@ -82,8 +82,8 @@ def test_env_only_env_var():
 
     # After environmental variable deleted, check to see if Config goes back to normal.
     assert_only_provider_used(SecretsManagerProvider)
-    assert type(config.resolved_cacher) == DynamoCacher
-    assert type(config.resolved_cacher) == DynamoCacher
+    assert type(config.resolved_cacher) is DynamoCacher
+    assert type(config.resolved_cacher) is DynamoCacher
 
 
 @Config(providers=[EnvironmentalProvider])
