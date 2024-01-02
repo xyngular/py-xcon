@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/xyngular/py-xcon/compare/v0.6.0...v0.7.0) (2024-01-02)
+
+
+### Features
+
+* support easily injectable dynamodb resource to use for caching. ([534bf00](https://github.com/xyngular/py-xcon/commit/534bf00f6e57365c3bf084734e6525f140c09ee0))
+
 ## [0.6.0](https://github.com/xyngular/py-xcon/compare/v0.5.0...v0.6.0) (2023-10-31)
 
 
