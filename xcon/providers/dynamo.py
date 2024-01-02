@@ -6,13 +6,15 @@ import logging
 import os
 import random
 from collections import defaultdict
-from typing import Dict, Optional, Callable, Iterable, Sequence, Tuple
+from typing import Dict, Optional, Callable, Iterable, Sequence, Tuple, Any
 from typing import Mapping
 
 from boto3.dynamodb import conditions
-from xboto.resource import dynamodb
+from xboto.dependencies import BotoResources
+from xinject import Dependency
 from xsentinels import Default
 from xloop import xloop
+from xsentinels.default import DefaultType
 
 from xcon.directory import Directory, DirectoryListing, DirectoryOrPath, DirectoryItem, \
     DirectoryChain
@@ -294,7 +296,7 @@ class DynamoCacher(ProviderCacher):
         """
         # Cache needs all of this stuff to do proper caching.
         environ = self._get_environ_to_use(environ)
-        if not directory or not directory_chain or not environ:
+        if not directory_chain or not environ:
             return None
 
         return self._get_listing(
@@ -395,7 +397,29 @@ class DynamoCacher(ProviderCacher):
         return Directory(service=e_service, env=e_env)
 
 
-# Most of this code could be shared from `xyn_model_dynamo`, but we don't want to import that
+class DynamoDBResource(Dependency):
+    dynamodb_xboto_resource: BotoResources.DynamoDB | DefaultType = Default
+    _table_name_to_boto_resource: dict[str, Any]
+
+    def __init__(self, dynamodb_xboto_resource: BotoResources.DynamoDB | DefaultType = Default):
+        self.dynamodb_xboto_resource = dynamodb_xboto_resource
+        self._table_name_to_boto_resource = {}
+
+    def table_resource(self, table_name):
+        if resource := self._table_name_to_boto_resource.get(table_name):
+            return resource
+
+        if self.dynamodb_xboto_resource is Default:
+            dynamodb = BotoResources.grab().dynamodb
+        else:
+            dynamodb = self.dynamodb_xboto_resource.boto_resource
+
+        resource = dynamodb.Table(table_name)
+        self._table_name_to_boto_resource[table_name] = resource
+        return resource
+
+
+# Most of this code could be shared from `xmodel_dynamo`, but we don't want to import that
 # in this library (it's a bit heavy).  So for now, we are duplicating some of that functionality
 # for use here, in a much simpler (but WAY less feature-rich) way:
 class _ConfigDynamoTable:
@@ -422,13 +446,7 @@ class _ConfigDynamoTable:
         """ DynamoDB table resource.
             We lazily get the resource, so we don't have to verify/create it if not needed.
         """
-        table = self._table
-        if table is not None:
-            return table
-
-        table = dynamodb.Table(self.table_name)
-        self._table = table
-        return table
+        return DynamoDBResource.grab().table_resource(self.table_name)
 
     def __init__(
             self,
