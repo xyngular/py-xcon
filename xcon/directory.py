@@ -623,7 +623,7 @@ class DirectoryListing:
     def __init__(self, directory: Directory = None, items: Iterable[DirectoryItem] = None):
         self.directory = directory
         self._items = {}
-        for item in xloop(items):
+        for item in xloop(items, default_not_iterate=[str]):
             self.add_item(item)
 
     def get_any_item(self) -> Optional[DirectoryItem]:

@@ -301,7 +301,7 @@ class ProviderChain:
         context = XContext.grab()
         provider_key_names = []
         query_before_finished = False
-        for p in xloop(self.providers):
+        for p in xloop(self.providers, default_not_iterate=[str]):
             # Check to see if any of them are classes [and type's resources needs to be grabbed].
             if isclass(p):
                 p = context.dependency(p)

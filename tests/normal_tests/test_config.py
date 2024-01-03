@@ -179,12 +179,14 @@ def test_direct_parent_behavior(directory: Directory):
     config_providers = [
         p for p in config.provider_chain.providers if not isinstance(p, ProviderCacher)
     ]
-    assert list(xloop(child.provider_chain.providers)) == list(xloop(config_providers))
+    assert list(
+        xloop(child.provider_chain.providers, default_not_iterate=[str])
+    ) == list(xloop(config_providers, default_not_iterate=[str]))
 
     child = Config(directories=["/hello/another"])
 
     assert list(
-        xloop(child.directory_chain.directories)
+        xloop(child.directory_chain.directories, default_not_iterate=[str])
     ) == [Directory.from_path("/hello/another")]
 
     assert child.cacher is Default
@@ -198,8 +200,8 @@ def test_direct_parent_behavior(directory: Directory):
         p if not isinstance(p, ProviderCacher) else child.cacher
         for p in config.provider_chain.providers
     ]
-    child_providers = list(xloop(child.provider_chain.providers))
-    parent_providers = list(xloop(config.provider_chain.providers))
+    child_providers = list(xloop(child.provider_chain.providers, default_not_iterate=[str]))
+    parent_providers = list(xloop(config.provider_chain.providers, default_not_iterate=[str]))
     assert child_providers == parent_providers
 
 
