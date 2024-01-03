@@ -347,7 +347,7 @@ class DynamoCacher(ProviderCacher):
             items = self._table.get_items_for_directory(directory=environ, expire_time=expire_time)
 
             # Ensure we have a list, and not a generator.
-            items = tuple(xloop(items))
+            items = tuple(xloop(items, default_not_iterate=[str]))
 
             # Log about stuff we retrieved from the cache table.
             self.log_about_items(items=items, path=environ.path)

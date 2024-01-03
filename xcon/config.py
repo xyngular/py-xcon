@@ -69,7 +69,7 @@ class _ParentChain:
         parents = self.parents
         if not isinstance(parents, tuple):
             # Convert to a tuple
-            object.__setattr__(self, 'parents', tuple(xloop(parents)))
+            object.__setattr__(self, 'parents', tuple(xloop(parents, default_not_iterate=[str])))
 
     def start_cursor(self) -> Optional[_ParentCursor]:
         """
@@ -339,7 +339,7 @@ class Config(Dependency):
 
         # This property will lazily be used to create self.provider_chain when the chain
         # is requested for the first time.
-        self._providers = {x: None for x in xloop(providers)}
+        self._providers = {x: None for x in xloop(providers, default_not_iterate=[str])}
 
         # We lazy-lookup cacher if it's Default or a Type.
         # See 'self.cacher' property.
@@ -386,7 +386,7 @@ class Config(Dependency):
         """
         # make an ordered-set out of this.
         dirs: OrderedDefaultSet = {}
-        for x in xloop(value):
+        for x in xloop(value, default_not_iterate=[str]):
             if x is not Default:
                 x = Directory.from_path(x)
             dirs[x] = None
@@ -400,7 +400,7 @@ class Config(Dependency):
             when you ask for the `Config.provider_chain`.
         """
         # make an ordered-set out of this.
-        self._providers = {x: None for x in xloop(value)}
+        self._providers = {x: None for x in xloop(value, default_not_iterate=[str])}
 
     def add_provider(self, provider: Type[Provider]):
         """ Adds a provider type to end of my provider type list [you can see what it is for
@@ -492,7 +492,7 @@ class Config(Dependency):
                 to add by service name. If you don't add the `xsentinels.Default` somewhere in
                 this list then we will NOT check the parent-chain
         """
-        self._exports = {x: None for x in xloop(services)}
+        self._exports = {x: None for x in xloop(services, default_not_iterate=[str])}
 
     def get_exports_by_service(self):
         """ List of services we currently check their export's for. This only lists the exports
@@ -1399,7 +1399,7 @@ class Config(Dependency):
 
         return {
             d.resolve(service=service, environment=environment): None
-            for d in xloop(xcon_settings.directories)
+            for d in xloop(xcon_settings.directories, default_not_iterate=[str])
         }
 
     def _service_with_cursor(self, cursor: Optional[_ParentCursor]) -> str:
