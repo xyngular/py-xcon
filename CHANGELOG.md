@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/xyngular/py-xcon/compare/v0.7.0...v0.8.0) (2024-01-03)
+
+
+### Features
+
+* project uses plain dicts as ordered sets (for now), keep old xloop behavior; upgrade python to 3.11+. ([fedaaf0](https://github.com/xyngular/py-xcon/commit/fedaaf01efaac5185601ea8781cc4cebf4b86e3d))
+
 ## [0.7.0](https://github.com/xyngular/py-xcon/compare/v0.6.0...v0.7.0) (2024-01-02)
 
 
