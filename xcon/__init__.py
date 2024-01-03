@@ -43,4 +43,4 @@ from .config import config
 from .config import ConfigSettings
 from .conf import xcon_settings
 
-__version__ = '0.7.0'
+__version__ = '0.8.0'
